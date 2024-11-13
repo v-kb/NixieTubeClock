@@ -31,7 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SR_
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -45,6 +45,8 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart2;
 
+RTC_HandleTypeDef hrtc;
+
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -55,13 +57,31 @@ static void MX_GPIO_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+void shift_register_set(uint8_t number) {
+	// Set data
+	HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, 1);
 
+	for(int i = 0; i < number; ++i) {
+		// Toggle clock n times
+		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 1);
+		HAL_Delay(1);
+		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 0);
+	}
+	// Toggle latch
+	HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 1);
+	HAL_Delay(1);
+	HAL_GPIO_WritePin(RCK_3V3_GPIO_Port, RCK_3V3_Pin, 0);
+
+	// Reset data
+	HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, 0);
+}
 /* USER CODE END 0 */
 
 /**
@@ -95,14 +115,30 @@ int main(void)
   MX_I2C1_Init();
   MX_LPUART1_UART_Init();
   MX_USART2_UART_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t led = 0;
   while (1)
   {
+	  // Enable OE
+	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
+	  for (int i = 0; i < 99; ++i) {
+		  if(led == 4)
+			  led = 0;
+		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
+		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 1);
+		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, led & 2);
+		  shift_register_set(i);
+		  HAL_Delay(500);
+		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 0);
+		  HAL_Delay(500);
+		  ++led;
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -127,9 +163,10 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI|RCC_OSCILLATORTYPE_LSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLLMUL_4;
@@ -153,10 +190,11 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPUART1
-                              |RCC_PERIPHCLK_I2C1;
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
+  PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -281,6 +319,42 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
+  * @brief RTC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_RTC_Init(void)
+{
+
+  /* USER CODE BEGIN RTC_Init 0 */
+
+  /* USER CODE END RTC_Init 0 */
+
+  /* USER CODE BEGIN RTC_Init 1 */
+
+  /* USER CODE END RTC_Init 1 */
+
+  /** Initialize RTC Only
+  */
+  hrtc.Instance = RTC;
+  hrtc.Init.HourFormat = RTC_HOURFORMAT_24;
+  hrtc.Init.AsynchPrediv = 127;
+  hrtc.Init.SynchPrediv = 255;
+  hrtc.Init.OutPut = RTC_OUTPUT_DISABLE;
+  hrtc.Init.OutPutRemap = RTC_OUTPUT_REMAP_NONE;
+  hrtc.Init.OutPutPolarity = RTC_OUTPUT_POLARITY_HIGH;
+  hrtc.Init.OutPutType = RTC_OUTPUT_TYPE_OPENDRAIN;
+  if (HAL_RTC_Init(&hrtc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN RTC_Init 2 */
+
+  /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -300,8 +374,10 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOC, DIMM_LED_1_Pin|DIMM_LED_2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, TXS_OE_Pin|SHDN_170V_3V3_Pin|INS_EN_3V3_Pin|DIN_3V3_Pin
-                          |OE_3V3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(TXS_OE_GPIO_Port, TXS_OE_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOA, SHDN_170V_3V3_Pin|INS_EN_3V3_Pin|DIN_3V3_Pin|OE_3V3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, RCK_3V3_Pin|SCK_3V3_Pin, GPIO_PIN_RESET);
@@ -321,10 +397,22 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : TXS_OE_Pin SHDN_170V_3V3_Pin INS_EN_3V3_Pin DIN_3V3_Pin
-                           OE_3V3_Pin */
-  GPIO_InitStruct.Pin = TXS_OE_Pin|SHDN_170V_3V3_Pin|INS_EN_3V3_Pin|DIN_3V3_Pin
-                          |OE_3V3_Pin;
+  /*Configure GPIO pin : TXS_OE_Pin */
+  GPIO_InitStruct.Pin = TXS_OE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(TXS_OE_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : SHDN_170V_3V3_Pin */
+  GPIO_InitStruct.Pin = SHDN_170V_3V3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SHDN_170V_3V3_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : INS_EN_3V3_Pin DIN_3V3_Pin OE_3V3_Pin */
+  GPIO_InitStruct.Pin = INS_EN_3V3_Pin|DIN_3V3_Pin|OE_3V3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

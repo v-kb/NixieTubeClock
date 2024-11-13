@@ -1,8 +1,9 @@
-main.c:75:5:main	1
-main.c:149:6:SystemClock_Config	4
-main.c:203:13:MX_I2C1_Init	4
-main.c:251:13:MX_LPUART1_UART_Init	2
-main.c:285:13:MX_USART2_UART_Init	2
-main.c:320:13:MX_GPIO_Init	1
-main.c:393:6:StartDefaultTask	1
-main.c:408:6:Error_Handler	1
+../Core/Src/main.c:67:6:shift_register_set	2
+../Core/Src/main.c:91:5:main	3
+../Core/Src/main.c:153:6:SystemClock_Config	4
+../Core/Src/main.c:209:13:MX_I2C1_Init	4
+../Core/Src/main.c:257:13:MX_LPUART1_UART_Init	2
+../Core/Src/main.c:291:13:MX_USART2_UART_Init	2
+../Core/Src/main.c:326:13:MX_RTC_Init	2
+../Core/Src/main.c:362:13:MX_GPIO_Init	1
+../Core/Src/main.c:446:6:Error_Handler	1

@@ -1,0 +1,3 @@
+[submodule "DS3231"]
+	path = DS3231
+	url = https://github.com/eepj/stm32-ds3231.git
