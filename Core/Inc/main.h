@@ -69,13 +69,13 @@ void Error_Handler(void);
 #define SHDN_170V_3V3_GPIO_Port GPIOA
 #define INS_EN_3V3_Pin GPIO_PIN_5
 #define INS_EN_3V3_GPIO_Port GPIOA
-#define DIN_3V3_Pin GPIO_PIN_6
+#define DIN_3V3_Pin GPIO_PIN_6		// SER
 #define DIN_3V3_GPIO_Port GPIOA
 #define OE_3V3_Pin GPIO_PIN_7
-#define OE_3V3_GPIO_Port GPIOA
-#define RCK_3V3_Pin GPIO_PIN_0
+#define OE_3V3_GPIO_Port GPIOA		// positive-edge triggered
+#define RCK_3V3_Pin GPIO_PIN_0		// RCLK storage register clock - latch
 #define RCK_3V3_GPIO_Port GPIOB
-#define SCK_3V3_Pin GPIO_PIN_1
+#define SCK_3V3_Pin GPIO_PIN_1		// SRCLK shift register clock
 #define SCK_3V3_GPIO_Port GPIOB
 #define INT_SQW_Pin GPIO_PIN_8
 #define INT_SQW_GPIO_Port GPIOA

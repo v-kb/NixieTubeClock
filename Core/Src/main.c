@@ -31,7 +31,9 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SR_
+#define DATA_SET(value)				HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, (value))	// Set data output
+#define SHIFT_REG_SET(value)		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, (value))	// Set shift register
+#define STORAGE_REG_SET(value)		HAL_GPIO_WritePin(RCK_3V3_GPIO_Port, RCK_3V3_Pin, (value))	// Set storage register
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -59,28 +61,22 @@ static void MX_LPUART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-
+static void pulse_shift_register(void);
+static void pulse_storage_register(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 void shift_register_set(uint8_t number) {
-	// Set data
-	HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, 1);
+	DATA_SET(1);					// Set data as "1" (high)
+	pulse_shift_register();			// Pulse shift register once so it will remember "1"
+	DATA_SET(0);					// Reset data as we don't need it anymore
 
 	for(int i = 0; i < number; ++i) {
-		// Toggle clock n times
-		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 1);
+		pulse_storage_register();	// Toggle latch n times
+		pulse_shift_register();		// Toggle clock n times
 		HAL_Delay(1);
-		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 0);
 	}
-	// Toggle latch
-	HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, 1);
-	HAL_Delay(1);
-	HAL_GPIO_WritePin(RCK_3V3_GPIO_Port, RCK_3V3_Pin, 0);
-
-	// Reset data
-	HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, 0);
 }
 /* USER CODE END 0 */
 
@@ -130,15 +126,24 @@ int main(void)
 	  for (int i = 0; i < 99; ++i) {
 		  if(led == 4)
 			  led = 0;
+
+		  // Set LEDs and IN
 		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
 		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 1);
 		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, led & 2);
 		  shift_register_set(i);
 		  HAL_Delay(500);
+
+		  // Reset LEDs and IN
 		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 0);
+		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, 0);
+		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, 0);
 		  HAL_Delay(500);
 		  ++led;
 	  }
+	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1);
+	  HAL_Delay(1000);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -436,7 +441,14 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+static void pulse_shift_register(void) {
+	SHIFT_REG_SET(1);
+	SHIFT_REG_SET(0);
+}
+static void pulse_storage_register(void) {
+	STORAGE_REG_SET(1);
+	STORAGE_REG_SET(0);
+}
 /* USER CODE END 4 */
 
 /**
