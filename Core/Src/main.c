@@ -31,6 +31,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+#define PULSE_DURATION_MS			1
 #define DATA_SET(value)				HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, (value))	// Set data output
 #define SHIFT_REG_SET(value)		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, (value))	// Set shift register
 #define STORAGE_REG_SET(value)		HAL_GPIO_WritePin(RCK_3V3_GPIO_Port, RCK_3V3_Pin, (value))	// Set storage register
@@ -63,21 +64,11 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 static void pulse_shift_register(void);
 static void pulse_storage_register(void);
+static void shift_register_set(uint8_t number);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void shift_register_set(uint8_t number) {
-	DATA_SET(1);					// Set data as "1" (high)
-	pulse_shift_register();			// Pulse shift register once so it will remember "1"
-	DATA_SET(0);					// Reset data as we don't need it anymore
-
-	for(int i = 0; i < number; ++i) {
-		pulse_storage_register();	// Toggle latch n times
-		pulse_shift_register();		// Toggle clock n times
-		HAL_Delay(1);
-	}
-}
 /* USER CODE END 0 */
 
 /**
@@ -118,20 +109,16 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t led = 0;
+  // Enable OE
+  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
   while (1)
   {
-	  // Enable OE
-	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
-	  for (int i = 0; i < 99; ++i) {
-		  if(led == 4)
-			  led = 0;
-
-		  // Set LEDs and IN
-		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
-		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 1);
-		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, led & 2);
+	  for (uint8_t i = 0, led = 0; i < 9; ++i, ++led) {
 		  shift_register_set(i);
+
+		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
+		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 0b00000001);	// Set LEDs and IN
+		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, led & 0b00000010);
 		  HAL_Delay(500);
 
 		  // Reset LEDs and IN
@@ -139,9 +126,9 @@ int main(void)
 		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, 0);
 		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, 0);
 		  HAL_Delay(500);
-		  ++led;
 	  }
-	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1);
+	  HAL_Delay(1000);
+	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1); // RESET OUTPUT
 	  HAL_Delay(1000);
 
     /* USER CODE END WHILE */
@@ -443,11 +430,25 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void pulse_shift_register(void) {
 	SHIFT_REG_SET(1);
+	HAL_Delay(PULSE_DURATION_MS);
 	SHIFT_REG_SET(0);
+	HAL_Delay(PULSE_DURATION_MS);
 }
 static void pulse_storage_register(void) {
 	STORAGE_REG_SET(1);
 	STORAGE_REG_SET(0);
+}
+
+static void shift_register_set(uint8_t number) {
+	DATA_SET(1);					// Set data as "1" (high)
+	pulse_shift_register();			// Pulse shift register once so it will remember "1"
+	pulse_storage_register();		// Toggle latch once
+	DATA_SET(0);					// Reset data as we don't need it anymore, we just "pass" the High level output to the right INS-12 pin
+
+	for(uint8_t i = 0; i < number; ++i) {
+		pulse_storage_register();	// Toggle latch n times
+		pulse_shift_register();		// Toggle clock n times
+	}
 }
 /* USER CODE END 4 */
 
