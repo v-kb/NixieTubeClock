@@ -51,7 +51,17 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-
+uint8_t number_to_pin[8] = {
+	0b00000000,
+	0b10000000,
+	0b01000000,
+	0b00100000,
+	0b00010000,
+	0b00001000,
+	0b00000100,
+	0b00000010,
+	0b00000001
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,7 +74,7 @@ static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
 static void pulse_shift_register(void);
 static void pulse_storage_register(void);
-static void shift_register_set(uint8_t number);
+static void nixie_number_set(uint8_t number);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -110,11 +120,11 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // Enable OE
-  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
   while (1)
   {
-	  for (uint8_t i = 0, led = 0; i < 9; ++i, ++led) {
-		  shift_register_set(i);
+	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
+	  for (uint8_t i = 0, led = 0; i < 10; ++i, ++led) {
+		  nixie_number_set(i);
 
 		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
 		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 0b00000001);	// Set LEDs and IN
@@ -430,25 +440,26 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void pulse_shift_register(void) {
 	SHIFT_REG_SET(1);
-	HAL_Delay(PULSE_DURATION_MS);
+//	HAL_Delay(PULSE_DURATION_MS);
 	SHIFT_REG_SET(0);
-	HAL_Delay(PULSE_DURATION_MS);
-}
-static void pulse_storage_register(void) {
-	STORAGE_REG_SET(1);
-	STORAGE_REG_SET(0);
+//	HAL_Delay(PULSE_DURATION_MS);
 }
 
-static void shift_register_set(uint8_t number) {
-	DATA_SET(1);					// Set data as "1" (high)
-	pulse_shift_register();			// Pulse shift register once so it will remember "1"
-	pulse_storage_register();		// Toggle latch once
-	DATA_SET(0);					// Reset data as we don't need it anymore, we just "pass" the High level output to the right INS-12 pin
 
-	for(uint8_t i = 0; i < number; ++i) {
-		pulse_storage_register();	// Toggle latch n times
+static void nixie_number_set(uint8_t number) {
+//	DATA_SET(1);					// Set data as "1" (high)
+//	pulse_shift_register();			// Pulse shift register once so it will remember "1"
+//	pulse_storage_register();		// Toggle latch once
+//	DATA_SET(0);					// Reset data as we don't need it anymore, we just "pass" the High level output to the right INS-12 pin
+
+	STORAGE_REG_SET(0);				// Disable latch
+	for(uint8_t i = 0; i < 10; ++i) {
+//		if(i == number) DATA_SET(number_to_pin[i] & (1 << 7-i));
+		if(i == number) DATA_SET(1);
 		pulse_shift_register();		// Toggle clock n times
+		DATA_SET(0);
 	}
+	STORAGE_REG_SET(1);				// Set latch
 }
 /* USER CODE END 4 */
 
