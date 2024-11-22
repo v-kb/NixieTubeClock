@@ -114,7 +114,9 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-
+  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1); // Disable output
+  STORAGE_REG_SET(0);
+  SHIFT_REG_SET(0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
