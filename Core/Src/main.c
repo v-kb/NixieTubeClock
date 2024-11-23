@@ -32,6 +32,8 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 #define PULSE_DURATION_MS			1
+#define OUTPUT_ENABLE()				HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0)
+#define OUTPUT_DISABLE()			HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1)
 #define DATA_SET(value)				HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, (value))	// Set data output
 #define SHIFT_REG_SET(value)		HAL_GPIO_WritePin(SCK_3V3_GPIO_Port, SCK_3V3_Pin, (value))	// Set shift register
 #define STORAGE_REG_SET(value)		HAL_GPIO_WritePin(RCK_3V3_GPIO_Port, RCK_3V3_Pin, (value))	// Set storage register
@@ -51,16 +53,17 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-uint8_t number_to_pin[8] = {
-	0b00000000,
-	0b10000000,
-	0b01000000,
-	0b00100000,
-	0b00010000,
-	0b00001000,
-	0b00000100,
-	0b00000010,
-	0b00000001
+uint16_t number_to_pin[10] = {
+	0b000000000,
+	0b100000000,
+	0b010000000,
+	0b001000000,
+	0b000100000,
+	0b000010000,
+	0b000001000,
+	0b000000100,
+	0b000000010,
+	0b000000001,
 };
 /* USER CODE END PV */
 
@@ -72,9 +75,9 @@ static void MX_LPUART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 /* USER CODE BEGIN PFP */
-static void pulse_shift_register(void);
-static void pulse_storage_register(void);
-static void nixie_number_set(uint8_t number);
+static void shift_reg_pulse_srclk(uint32_t delay_ms);
+static void shift_reg_send(uint16_t data);
+static void nixie_test_4(void);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -114,34 +117,33 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
-  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1); // Disable output
+  OUTPUT_DISABLE();
   STORAGE_REG_SET(0);
   SHIFT_REG_SET(0);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  // Enable OE
+  HAL_Delay(1000);
   while (1)
   {
-	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 0);
-	  for (uint8_t i = 0, led = 0; i < 10; ++i, ++led) {
-		  nixie_number_set(i);
+	  OUTPUT_ENABLE();
 
-		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 1);
-		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, led & 0b00000001);	// Set LEDs and IN
-		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, led & 0b00000010);
-		  HAL_Delay(500);
+//	  for (uint8_t i = 0, led = 0; i < 10; ++i) {
+//		  shift_reg_send(i);
+//
+//		  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
+//		  HAL_GPIO_TogglePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin);
+//		  HAL_GPIO_TogglePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin);
+//		  HAL_Delay(1000);
+//	  }
 
-		  // Reset LEDs and IN
-		  HAL_GPIO_WritePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin, 0);
-		  HAL_GPIO_WritePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin, 0);
-		  HAL_GPIO_WritePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin, 0);
-		  HAL_Delay(500);
-	  }
+	  nixie_test_4();
 	  HAL_Delay(1000);
-	  HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, 1); // RESET OUTPUT
-	  HAL_Delay(1000);
+
+	  // RESET
+	  OUTPUT_DISABLE();
+	  HAL_Delay(10);
 
     /* USER CODE END WHILE */
 
@@ -440,28 +442,63 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-static void pulse_shift_register(void) {
+static void shift_reg_pulse_srclk(uint32_t delay_ms) {
 	SHIFT_REG_SET(1);
-//	HAL_Delay(PULSE_DURATION_MS);
+	HAL_Delay(PULSE_DURATION_MS);
 	SHIFT_REG_SET(0);
-//	HAL_Delay(PULSE_DURATION_MS);
+	HAL_Delay(PULSE_DURATION_MS);
 }
 
+// numbers[0] = MSB aka "hours > 9"
 
-static void nixie_number_set(uint8_t number) {
-//	DATA_SET(1);					// Set data as "1" (high)
-//	pulse_shift_register();			// Pulse shift register once so it will remember "1"
-//	pulse_storage_register();		// Toggle latch once
-//	DATA_SET(0);					// Reset data as we don't need it anymore, we just "pass" the High level output to the right INS-12 pin
 
-	STORAGE_REG_SET(0);				// Disable latch
-	for(uint8_t i = 0; i < 10; ++i) {
-//		if(i == number) DATA_SET(number_to_pin[i] & (1 << 7-i));
-		if(i == number) DATA_SET(1);
-		pulse_shift_register();		// Toggle clock n times
-		DATA_SET(0);
+// data size is 16 bit, but only 10 are actually connected to a nixie lamp
+static void shift_reg_send(uint16_t data) {
+//	/*
+//	 * Disable latch
+//	 */
+//	STORAGE_REG_SET(0);
+
+	/*
+	 * Set SER pin according to currently transmitted bit
+	 * Toggle clock n times to set all N bits
+	 */
+	for (uint16_t bit = 0; bit < 16; ++bit) {
+		DATA_SET((data >> bit) & 1);					// Send least significant bit first
+		shift_reg_pulse_srclk(PULSE_DURATION_MS);
 	}
-	STORAGE_REG_SET(1);				// Set latch
+
+//	/*
+//	 * Set latch
+//	 */
+//	STORAGE_REG_SET(1);
+}
+
+static void nixie_show_time(uint32_t h, uint32_t m, uint32_t s) {
+
+}
+static void nixie_test_4(void) {
+	static uint16_t n[4] = {1 << 9, 1 << 8, 1 << 7, 1 << 6};
+
+	//   	#1				#2				#3			#4
+	//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
+	// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
+
+	/*
+	 * Disable latch
+	 */
+	STORAGE_REG_SET(0);
+
+	for (int i = 0; i < 4; ++i) {
+		shift_reg_send(n[i]);
+		if ((n[i] >> 1) == 0)
+			n[i] = 1 << 9;
+	}
+
+	/*
+	 * Set latch
+	 */
+	STORAGE_REG_SET(1);
 }
 /* USER CODE END 4 */
 
