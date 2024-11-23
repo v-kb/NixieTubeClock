@@ -65,6 +65,10 @@ uint16_t number_to_pin[10] = {
 	0b000000010,
 	0b000000001,
 };
+//   	#1				#2				#3			#4
+//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
+// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
+uint16_t n[4] = {1 << 9, 1 << 8, 1 << 7, 1 << 6};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -463,7 +467,7 @@ static void shift_reg_send(uint16_t data) {
 	 * Set SER pin according to currently transmitted bit
 	 * Toggle clock n times to set all N bits
 	 */
-	for (uint16_t bit = 0; bit < 16; ++bit) {
+	for (uint16_t bit = 15; bit >= 0; ++bit) {
 		DATA_SET((data >> bit) & 1);					// Send least significant bit first
 		shift_reg_pulse_srclk(PULSE_DURATION_MS);
 	}
@@ -478,8 +482,6 @@ static void nixie_show_time(uint32_t h, uint32_t m, uint32_t s) {
 
 }
 static void nixie_test_4(void) {
-	static uint16_t n[4] = {1 << 9, 1 << 8, 1 << 7, 1 << 6};
-
 	//   	#1				#2				#3			#4
 	//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
 	// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
