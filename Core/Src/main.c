@@ -455,6 +455,9 @@ static void shift_reg_pulse_srclk(uint32_t delay_ms) {
 
 // numbers[0] = MSB aka "hours > 9"
 
+//   	#1				#2				#3			#4
+//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
+// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
 
 // data size is 16 bit, but only 10 are actually connected to a nixie lamp
 static void shift_reg_send(uint16_t data) {
@@ -467,7 +470,7 @@ static void shift_reg_send(uint16_t data) {
 	 * Set SER pin according to currently transmitted bit
 	 * Toggle clock n times to set all N bits
 	 */
-	for (uint16_t bit = 15; bit >= 0; ++bit) {
+	for (uint8_t bit = 15; bit >= 0; --bit) {
 		DATA_SET((data >> bit) & 1);					// Send least significant bit first
 		shift_reg_pulse_srclk(PULSE_DURATION_MS);
 	}
@@ -493,7 +496,8 @@ static void nixie_test_4(void) {
 
 	for (int i = 0; i < 4; ++i) {
 		shift_reg_send(n[i]);
-		if ((n[i] >> 1) == 0)
+		n[i] = n[i] >> 1;
+		if (n[i] == 0)
 			n[i] = 1 << 9;
 	}
 
