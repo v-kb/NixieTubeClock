@@ -141,15 +141,19 @@ int main(void)
 
 //  random_number = rand();
   HAL_Delay(1000);
+  uint32_t tickstart = 0;
   while (1)
   {
 	  OUTPUT_DISABLE();		// RESET
-
 	  number = ((uint16_t)DS3231_GetHour())*100 + (uint16_t)DS3231_GetMinute();
 	  nixie_test(number);
-
 	  OUTPUT_ENABLE();
-	  HAL_Delay(1000);
+
+	  tickstart = HAL_GetTick();
+	  while (HAL_GetTick() - tickstart < 60000) {
+		  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
+		  HAL_Delay(500);
+	  }
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
