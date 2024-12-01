@@ -24,5 +24,6 @@ C_DEPS :=
 SUBDIRS := \
 Core/Src \
 Core/Startup \
+DS3231 \
 Drivers/STM32L0xx_HAL_Driver/Src \
 

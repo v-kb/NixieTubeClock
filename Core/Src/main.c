@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <stdlib.h>
+#include "ds3231_for_stm32_hal.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -33,7 +34,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define PULSE_DURATION_MS						10 // Debug value 1000ms to see action
+#define PULSE_DURATION_MS						0 // Debug value 1000ms to see action
 #define OUTPUT_ENABLE()							HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, GPIO_PIN_RESET)
 #define OUTPUT_DISABLE()						HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, GPIO_PIN_SET)
 #define DATA_SET(value)							HAL_GPIO_WritePin(DIN_3V3_GPIO_Port, DIN_3V3_Pin, (GPIO_PinState)(value))	// Set data output
@@ -57,53 +58,19 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-//typedef enum {
-//	ZERO 	= 0,
-//	ONE 	= 0b100000000,
-//	TWO		= 0b010000000,
-//	THREE	= 0b001000000,
-//	FOUR	= 0b000100000,
-//	FIVE	= 0b000010000,
-//	SIX		= 0b000001000,
-//	SEVEN	= 0b000000100,
-//	EIGHT	= 0b000000010,
-//	NINE	= 0b000000001
-//} NumberBitsMSB;
-
-uint16_t digit_to_bits[10] = {
-	0b000000000,
-	0b100000000,
-	0b010000000,
-	0b001000000,
-	0b000100000,
-	0b000010000,
-	0b000001000,
-	0b000000100,
-	0b000000010,
-	0b000000001,
+uint16_t digit_bitmask[10] = {
+	0b0000000001,	// 0
+	0b0000000010,	// 1
+	0b0000000100,	// 2
+	0b0000001000,	// 3
+	0b0000010000,	// 4
+	0b0000100000,	// 5
+	0b0001000000,	// 6
+	0b0010000000,	// 7
+	0b0100000000,	// 8
+	0b1000000000 	// 9
 };
 
-typedef struct {
-	uint16_t reversed;
-	uint16_t normal;
-} DigitBits_TypeDef;
-
-DigitBits_TypeDef digit_to_shift_reg_data[NUM_OF_DIGITS] = {
-		{0b000000000, 0b000000000},	// 0
-		{0b000000001, 0b100000000},	// 1
-		{0b000000010, 0b010000000},	// 2
-		{0b000000100, 0b001000000},	// 3
-		{0b000001000, 0b000100000},	// 4
-		{0b000010000, 0b000010000},	// 5
-		{0b000100000, 0b000001000},	// 6
-		{0b001000000, 0b000000100},	// 7
-		{0b010000000, 0b000000010},	// 8
-		{0b100000000, 0b000000001},	// 9
-};
-//   	#1				#2				#3			#4
-//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
-// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
-uint16_t n[4] = {1 << 9, 1 << 8, 1 << 7, 1 << 6};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -159,6 +126,11 @@ int main(void)
   OUTPUT_DISABLE();
   STORAGE_REG_SET(0);
   SHIFT_REG_SET(0);
+
+
+  DS3231_Init(&hi2c1);
+  DS3231_SetFullTime(21, 34, 00);
+  DS3231_EnableOscillator(DS3231_ENABLED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -167,30 +139,17 @@ int main(void)
   uint16_t random_number = 0;      // Returns a pseudo-random integer between 0 and RAND_MAX.
   uint16_t number = 0;      // Returns a pseudo-random integer between 0 and RAND_MAX.
 
+//  random_number = rand();
   HAL_Delay(1000);
   while (1)
   {
-	  // RESET
-	  OUTPUT_DISABLE();
+	  OUTPUT_DISABLE();		// RESET
 
-//	  for (uint8_t i = 0, led = 0; i < 10; ++i) {
-//		  shift_reg_send(i);
-//
-//		  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
-//		  HAL_GPIO_TogglePin(DIMM_LED_1_GPIO_Port, DIMM_LED_1_Pin);
-//		  HAL_GPIO_TogglePin(DIMM_LED_2_GPIO_Port, DIMM_LED_2_Pin);
-//		  HAL_Delay(1000);
-//	  }
-
-	  random_number = rand();
-	  number = 1234;
+	  number = ((uint16_t)DS3231_GetHour())*100 + (uint16_t)DS3231_GetMinute();
 	  nixie_test(number);
-	  HAL_Delay(10);
+
 	  OUTPUT_ENABLE();
-
 	  HAL_Delay(1000);
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -490,15 +449,15 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 static void shift_reg_pulse_srclk(uint32_t delay_ms) {
 	SHIFT_REG_SET(1);
-	HAL_Delay(delay_ms);
+//	HAL_Delay(delay_ms);
 	SHIFT_REG_SET(0);
-	HAL_Delay(delay_ms);
+//	HAL_Delay(delay_ms);
 }
 static void shift_reg_pulse_rclk(uint32_t delay_ms) {
 	STORAGE_REG_SET(1);
-	HAL_Delay(delay_ms);
+//	HAL_Delay(delay_ms);
 	STORAGE_REG_SET(0);
-	HAL_Delay(delay_ms);
+//	HAL_Delay(delay_ms);
 }
 
 
@@ -511,24 +470,14 @@ static void shift_reg_pulse_rclk(uint32_t delay_ms) {
 
 // data size is 16 bit, but only 10 are actually connected to a nixie lamp
 static void shift_reg_send(uint16_t data) {
-//	/*
-//	 * Disable latch
-//	 */
-//	STORAGE_REG_SET(0);
-
 	/*
 	 * Set SER pin according to currently transmitted bit
 	 * Toggle clock n times to set all N bits
 	 */
-	for (uint8_t bit = 15; bit >= 0; --bit) {
+	for (int8_t bit = 15; bit >= 0; --bit) {
 		DATA_SET((data >> bit) & 1);					// Send least significant bit first
 		shift_reg_pulse_srclk(PULSE_DURATION_MS);
 	}
-
-//	/*
-//	 * Set latch
-//	 */
-//	STORAGE_REG_SET(1);
 }
 
 static void nixie_show_time(uint32_t h, uint32_t m, uint32_t s) {
@@ -538,19 +487,12 @@ static void nixie_test(uint16_t number) {
 	//   	#1				#2				#3			#4
 	//   0123 4567 89   0123 4567 89   0123 4567 89   0123 4567 89
 	// 0b1000 0000 00 0b0100 0000 00 0b0010 0000 00 0b0001 0000 00
-
-
 	uint16_t digit_data[4] = {
-			digit_to_shift_reg_data[	(number/1000)	%10000	].reversed,
-			digit_to_shift_reg_data[	(number/100)	%1000	].reversed,
-			digit_to_shift_reg_data[	(number/10)		%100	].reversed,
-			digit_to_shift_reg_data[	(number/1)		%10		].reversed,
+			digit_bitmask[	number%10			],
+			digit_bitmask[	(number%100)/10		],
+			digit_bitmask[	(number%1000)/100	],
+			digit_bitmask[	(number%10000)/1000	],
 	};
-
-	/*
-	 * Disable latch
-	 */
-//	STORAGE_REG_SET(0);
 
 	/*
 	 * Send data
@@ -558,14 +500,6 @@ static void nixie_test(uint16_t number) {
 	for (int digit = 0; digit < 4; ++digit) {
 		shift_reg_send(digit_data[digit]);
 	}
-//		n[i] = n[i] >> 1;
-//		if (n[i] == 0)
-//			n[i] = 1 << 9;
-
-	/*
-	 * Set latch
-	 */
-//	STORAGE_REG_SET(1);
 
 	shift_reg_pulse_rclk(PULSE_DURATION_MS);
 }
