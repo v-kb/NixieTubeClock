@@ -110,10 +110,12 @@ int main(void)
   uint16_t h, m, s;
   while (1)
   {
-	  h = DS3231_GetHour();
-	  m = DS3231_GetMinute();
-	  s = DS3231_GetSecond();
-	  IN12_set_digit_pairs(m, s);
+//	  h = DS3231_GetHour();
+//	  m = DS3231_GetMinute();
+//	  s = DS3231_GetSecond();
+	  time_update();
+	  extern RTC_TimeTypeDef rtc_time;
+	  IN12_set_digit_pairs(rtc_time.Minutes, rtc_time.Seconds);
 
 	  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
 	  HAL_Delay(500);

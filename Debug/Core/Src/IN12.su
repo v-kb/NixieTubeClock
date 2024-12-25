@@ -1,6 +1,8 @@
 ../Core/Src/IN12.c:44:13:shift_reg_pulse_srclk	8	static
 ../Core/Src/IN12.c:59:13:shift_reg_send	16	static
 ../Core/Src/IN12.c:50:13:shift_reg_pulse_rclk	8	static
+../Core/Src/IN12.c:112:13:date_update	8	static
 ../Core/Src/IN12.c:79:6:IN12_set_digits_separately	32	static
 ../Core/Src/IN12.c:75:6:IN12_set_digit_pairs	24	static
-../Core/Src/IN12.c:106:6:IN12_init	16	static
+../Core/Src/IN12.c:106:6:time_update	8	static
+../Core/Src/IN12.c:121:6:IN12_init	8	static

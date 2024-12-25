@@ -103,15 +103,25 @@ void IN12_set_digits_separately(uint8_t first_digit, uint8_t second_digit, uint8
 	OUTPUT_ENABLE();
 }
 
-void IN12_init(void) {
+void time_update(void) {
 	rtc_time.Hours 		= DS3231_GetHour();
 	rtc_time.Minutes 	= DS3231_GetMinute();
 	rtc_time.Seconds 	= DS3231_GetSecond();
+}
 
+static void date_update(void) {
 	rtc_date.Year 		= DS3231_GetYear();
 	rtc_date.Month 		= DS3231_GetMonth();
 	rtc_date.Date 		= DS3231_GetDate();
 	rtc_date.WeekDay 	= DS3231_GetDayOfWeek();
+}
+
+
+
+void IN12_init(void) {
+	time_update();
+	date_update();
+
 
 	if(!rtc_time.Hours && !rtc_time.Minutes && !rtc_time.Seconds) {
 		// todo: go to the "time set mode" automaticaly
