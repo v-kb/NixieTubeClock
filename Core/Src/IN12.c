@@ -10,6 +10,10 @@
 RTC_TimeTypeDef rtc_time;
 RTC_DateTypeDef rtc_date;
 
+struct {
+	uint8_t is_on; // 1 = lamp is turned on
+} lamp_params;
+
 
 #define PULSE_DURATION_MS						0 // Debug value 1000ms to see action
 #define OUTPUT_ENABLE()							HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, GPIO_PIN_RESET)

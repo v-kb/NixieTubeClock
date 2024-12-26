@@ -93,7 +93,9 @@ void Error_Handler(void);
 #define BTN_1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+#define MASK_LEFT	1
+#define MASK_ENTER	2
+#define MASK_RIGHT	4
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "IN12.h"
+#include "buttons.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,7 +49,13 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-
+Button_InitTypeDef list[MAX_NUMBER_OF_BUTTONS] = {
+		{"Left", 	BTN_1_GPIO_Port, BTN_1_Pin, GPIO_PIN_RESET},
+		{"Right", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
+		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET},
+//		{"Up", 		BTN_U_GPIO_Port, BTN_U_Pin, GPIO_PIN_RESET},
+//		{"Down", 	BTN_D_GPIO_Port, BTN_D_Pin, GPIO_PIN_RESET},
+};
 
 /* USER CODE END PV */
 
@@ -102,6 +109,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
   IN12_init();
   DS3231_Init(&hi2c1);
+
+
+	btns_init(hbtns, list, 3, htim2, PRESSED); // Init only 4 to check if it is a comfortable way of disabling certain buttons.
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -110,6 +120,7 @@ int main(void)
   uint16_t h, m, s;
   while (1)
   {
+
 //	  h = DS3231_GetHour();
 //	  m = DS3231_GetMinute();
 //	  s = DS3231_GetSecond();
