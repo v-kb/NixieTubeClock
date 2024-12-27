@@ -45,12 +45,18 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
+LPTIM_HandleTypeDef hlptim1;
+
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart2;
 
 RTC_HandleTypeDef hrtc;
 
+TIM_HandleTypeDef htim21;
+
 /* USER CODE BEGIN PV */
+extern RTC_TimeTypeDef rtc_time;
+
 Menu_HandleTypeDef 		hmenu;
 Buttons_HandleTypeDef 	hbtns;
 
@@ -59,7 +65,7 @@ Button_InitTypeDef btns_list[] = {
 		{"Right", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
 		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET}
 };
-Item_TypeDef items_list[NUM_OF_ITEMS] = {
+Item_TypeDef items_list[] = {
 		{"FW VERSION",  			MAIN, 		NULL,     							2},
 		{"COMPILE DATE",			MAIN, 		NULL,     							2},
 		{"YEAR",     				MAIN, 		NULL,     							2},
@@ -90,6 +96,7 @@ Setting_TypeDef s_ptr[] = {
 };
 uint16_t settings_size = sizeof(s_ptr)/sizeof(s_ptr[0]);
 uint8_t num_of_btns = sizeof(btns_list)/sizeof(btns_list[0]);
+uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 
 
@@ -107,6 +114,8 @@ static void MX_I2C1_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
+static void MX_TIM21_Init(void);
+static void MX_LPTIM1_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -147,23 +156,53 @@ int main(void)
   MX_LPUART1_UART_Init();
   MX_USART2_UART_Init();
   MX_RTC_Init();
+  MX_TIM21_Init();
+  MX_LPTIM1_Init();
   /* USER CODE BEGIN 2 */
-  settings_init(s_ptr, settings_size);
+//  settings_init(s_ptr, settings_size);
   IN12_init();
   DS3231_Init(&hi2c1);
 
-  init_menu_items(&hmenu, items_list);
-  btns_init(&hbtns, btns_list, num_of_btns, htim2, PRESSED);
+  init_menu_items(&hmenu, items_list, num_of_items);
+  btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // 7-15 Volts input
+  uint8_t dir = 0;
+  uint8_t is_upd = 0;
   while (1)
   {
 	  time_update();
-	  extern RTC_TimeTypeDef rtc_time;
-	  IN12_set_digit_pairs(rtc_time.Minutes, rtc_time.Seconds);
+
+	  IN12_set_digit_pairs(rtc_time.Hours, rtc_time.Minutes);
+
+	  btns_check(&hbtns);
+
+	  switch(shared_mask) {
+	  case MASK_LEFT:
+		  if (dir == 0) ++rtc_time.Hours;
+		  else			--rtc_time.Hours;
+		  is_upd = 1;
+		  break;
+	  case MASK_RIGHT:
+		  if (dir == 0) ++rtc_time.Minutes;
+		  else			--rtc_time.Minutes;
+		  is_upd = 1;
+	  case MASK_ENTER:
+		  dir = ~dir;
+		  break;
+	  default: is_upd = 0;
+	  }
+
+	  if(is_upd) {
+		  rtc_time.Seconds = 0;
+		  DS3231_EnableOscillator(DS3231_DISABLED);
+		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+		  DS3231_EnableOscillator(DS3231_ENABLED);
+	  }
+	  shared_mask = 0;
 
 	  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
 	  HAL_Delay(500);
@@ -218,11 +257,14 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPUART1
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC;
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC
+                              |RCC_PERIPHCLK_LPTIM1;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
+  PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_PCLK;
+
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -274,6 +316,38 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
+
+}
+
+/**
+  * @brief LPTIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_LPTIM1_Init(void)
+{
+
+  /* USER CODE BEGIN LPTIM1_Init 0 */
+
+  /* USER CODE END LPTIM1_Init 0 */
+
+  /* USER CODE BEGIN LPTIM1_Init 1 */
+
+  /* USER CODE END LPTIM1_Init 1 */
+  hlptim1.Instance = LPTIM1;
+  hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
+  hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
+  hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
+  hlptim1.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
+  hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
+  hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
+  if (HAL_LPTIM_Init(&hlptim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN LPTIM1_Init 2 */
+
+  /* USER CODE END LPTIM1_Init 2 */
 
 }
 
@@ -379,6 +453,51 @@ static void MX_RTC_Init(void)
   /* USER CODE BEGIN RTC_Init 2 */
 
   /* USER CODE END RTC_Init 2 */
+
+}
+
+/**
+  * @brief TIM21 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM21_Init(void)
+{
+
+  /* USER CODE BEGIN TIM21_Init 0 */
+
+  /* USER CODE END TIM21_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM21_Init 1 */
+
+  /* USER CODE END TIM21_Init 1 */
+  htim21.Instance = TIM21;
+  htim21.Init.Prescaler = 32000-1;
+  htim21.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim21.Init.Period = 50-1;
+  htim21.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim21.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim21) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim21, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim21, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM21_Init 2 */
+
+  /* USER CODE END TIM21_Init 2 */
 
 }
 

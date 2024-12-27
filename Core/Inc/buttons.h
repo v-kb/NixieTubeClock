@@ -16,7 +16,7 @@
 #define MAX_NUMBER_OF_BUTTONS	15	// 15 is max because "mask" is a 16-bit variable
 #define MAX_NAME_LENGTH			20
 
-
+extern uint32_t shared_mask, shared_press_type;
 
 typedef enum {
 	RELEASED,

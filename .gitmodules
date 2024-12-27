@@ -2,5 +2,5 @@
 	path = DS3231
 	url = https://github.com/eepj/stm32-ds3231.git
 [submodule "/libSettings"]
-	path = /libSettings
+	path = libSettings
 	url = https://github.com/v-kb/libSettings.git

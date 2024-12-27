@@ -1,0 +1,2 @@
+../Core/Src/menu.c:133:6:init_menu_items	0	static
+../Core/Src/menu.c:147:6:init_menu_functions	0	static
