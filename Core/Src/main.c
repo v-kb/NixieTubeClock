@@ -22,7 +22,9 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "IN12.h"
+#include "menu.h"
 #include "buttons.h"
+#include "settings.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,13 +51,52 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 /* USER CODE BEGIN PV */
-Button_InitTypeDef list[MAX_NUMBER_OF_BUTTONS] = {
+Menu_HandleTypeDef 		hmenu;
+Buttons_HandleTypeDef 	hbtns;
+
+Button_InitTypeDef btns_list[] = {
 		{"Left", 	BTN_1_GPIO_Port, BTN_1_Pin, GPIO_PIN_RESET},
 		{"Right", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
-		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET},
-//		{"Up", 		BTN_U_GPIO_Port, BTN_U_Pin, GPIO_PIN_RESET},
-//		{"Down", 	BTN_D_GPIO_Port, BTN_D_Pin, GPIO_PIN_RESET},
+		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET}
 };
+Item_TypeDef items_list[NUM_OF_ITEMS] = {
+		{"FW VERSION",  			MAIN, 		NULL,     							2},
+		{"COMPILE DATE",			MAIN, 		NULL,     							2},
+		{"YEAR",     				MAIN, 		NULL,     							2},
+		{"MONTH",     				MAIN, 		NULL,     							0},
+		{"DAY",     				MAIN, 		NULL,								1},
+		{"HOURS",     				MAIN, 		NULL,								1},
+		{"MINUTES",     			MAIN, 		NULL,								1},
+		{"SECONDS",     			MAIN, 		NULL,								1},
+		{"TUBES BRIGHTNESS ADJUST", SETTINGS, 	&s_ptr[TUBES_BRIGHTNESS_ADJUST],	0},
+		{"AMBIENT LIGHT SENSOR",    SETTINGS, 	&s_ptr[AMBIENT_LIGHT_SENSOR], 		1},
+		{"TEMPERATURE SENSOR",     	SETTINGS, 	&s_ptr[TEMPERATURE_SENSOR], 		1},
+		{"BLUETOOTH",     			SETTINGS, 	&s_ptr[BLUETOOTH], 					1},
+};
+Setting_TypeDef s_ptr[] = {
+		// Name				Current value	  Default	Delta	  Min		Max				Need to save		  Cyclic change
+		{"FW_VERSION",				.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
+		{"COMPILE_DATE",			.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
+		{"YEAR",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 2077, 	.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"MONTH",					.val = 0, .def = 0, .del = 1, .min = 1, . max = 12,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"DAY",						.val = 0, .def = 0, .del = 1, .min = 1, . max = 31,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"HOURS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 23,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"MINUTES",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"SECONDS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"TUBES_BRIGHTNESS_ADJUST",	.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 0},
+		{"AMBIENT_LIGHT_SENSOR",	.val = 0, .def = 1, .del = 1, .min = 0, . max = 1, 		.is_need_to_save = 1, .is_change_cyclic = 1},
+		{"TEMPERATURE_SENSOR",		.val = 0, .def = 1, .del = 1, .min = 0, . max = 1, 		.is_need_to_save = 1, .is_change_cyclic = 1},
+		{"BLUETOOTH",				.val = 0, .def = 1, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 1},
+};
+uint16_t settings_size = sizeof(s_ptr)/sizeof(s_ptr[0]);
+uint8_t num_of_btns = sizeof(btns_list)/sizeof(btns_list[0]);
+
+
+
+
+
+
+
 
 /* USER CODE END PV */
 
@@ -107,23 +148,19 @@ int main(void)
   MX_USART2_UART_Init();
   MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  settings_init(s_ptr, settings_size);
   IN12_init();
   DS3231_Init(&hi2c1);
 
-
-	btns_init(hbtns, list, 3, htim2, PRESSED); // Init only 4 to check if it is a comfortable way of disabling certain buttons.
+  init_menu_items(&hmenu, items_list);
+  btns_init(&hbtns, btns_list, num_of_btns, htim2, PRESSED);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // 7-15 Volts input
-  uint16_t h, m, s;
   while (1)
   {
-
-//	  h = DS3231_GetHour();
-//	  m = DS3231_GetMinute();
-//	  s = DS3231_GetSecond();
 	  time_update();
 	  extern RTC_TimeTypeDef rtc_time;
 	  IN12_set_digit_pairs(rtc_time.Minutes, rtc_time.Seconds);

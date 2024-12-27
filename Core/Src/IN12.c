@@ -120,19 +120,13 @@ static void date_update(void) {
 	rtc_date.WeekDay 	= DS3231_GetDayOfWeek();
 }
 
-
-
 void IN12_init(void) {
-	time_update();
-	date_update();
-
-
-	if(!rtc_time.Hours && !rtc_time.Minutes && !rtc_time.Seconds) {
+	if(DS3231_IsOscillatorStopped()) {
 		// todo: go to the "time set mode" automaticaly
-		DS3231_SetFullTime(21, 34, 00);
+		DS3231_SetFullTime(12, 34, 56);
+		DS3231_EnableOscillator(DS3231_ENABLED);
 	}
 
-
-	DS3231_GetDate();
-	DS3231_EnableOscillator(DS3231_ENABLED);
+	time_update();
+	date_update();
 }

@@ -93,9 +93,38 @@ void Error_Handler(void);
 #define BTN_1_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define MASK_LEFT	1
-#define MASK_ENTER	2
-#define MASK_RIGHT	4
+#define MASK_LEFT					1
+#define MASK_RIGHT					2
+#define MASK_ENTER					4
+#define NUM_OF_BTN_COMBINATIONS		(MASK_LEFT|MASK_RIGHT|MASK_ENTER)
+
+typedef enum {
+	BOOT,
+	MAIN,
+//	TIMER,
+	SETTINGS,
+
+	NUM_OF_MENUS
+} MenuType;
+
+typedef enum {
+	NO_ITEM,
+
+	FW_VERSION,
+	COMPILE_DATE,
+	YEAR,
+	MONTH,
+	DAY,
+	HOURS,
+	MINUTES,
+	SECONDS,
+	TUBES_BRIGHTNESS_ADJUST,
+	AMBIENT_LIGHT_SENSOR,
+	TEMPERATURE_SENSOR,
+	BLUETOOTH,
+
+//	NUM_OF_ITEMS
+} ItemType;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
