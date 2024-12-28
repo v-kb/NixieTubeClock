@@ -1,1 +1,2 @@
-../Core/Src/callbacks.c:15:6:btns_callback	0	static
+../Core/Src/callbacks.c:16:6:btns_callback	0	static
+../Core/Src/callbacks.c:32:6:HAL_TIM_PeriodElapsedCallback	8	static

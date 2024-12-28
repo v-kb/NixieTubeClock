@@ -56,6 +56,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern TIM_HandleTypeDef htim21;
+extern TIM_HandleTypeDef htim22;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -152,6 +153,20 @@ void TIM21_IRQHandler(void)
   /* USER CODE BEGIN TIM21_IRQn 1 */
 
   /* USER CODE END TIM21_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM22 global interrupt.
+  */
+void TIM22_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM22_IRQn 0 */
+
+  /* USER CODE END TIM22_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim22);
+  /* USER CODE BEGIN TIM22_IRQn 1 */
+
+  /* USER CODE END TIM22_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

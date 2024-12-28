@@ -20,9 +20,9 @@
  */
 
 static uint8_t 	hold_1s_cnt = 0; 						/*!< Count of the actual number of buttons, increased with each successful button register */
-static uint8_t 	hold_2s_count = 0; 						/*!< Count of the actual number of buttons, increased with each successful button register */
-static uint8_t 	hold_5s_count = 0; 						/*!< Count of the actual number of buttons, increased with each successful button register */
-static uint8_t 	hold_10s_count = 0; 					/*!< Count of the actual number of buttons, increased with each successful button register */
+//static uint8_t 	hold_2s_count = 0; 						/*!< Count of the actual number of buttons, increased with each successful button register */
+//static uint8_t 	hold_5s_count = 0; 						/*!< Count of the actual number of buttons, increased with each successful button register */
+//static uint8_t 	hold_10s_count = 0; 					/*!< Count of the actual number of buttons, increased with each successful button register */
 
 uint32_t shared_mask, shared_press_type;
 
@@ -172,9 +172,6 @@ __weak void btns_callback(uint16_t mask, PressType_TypeDef press_type)
 	/* Prevent unused argument(s) compilation warning */
 	UNUSED(mask);
 	UNUSED(press_type);
-
-	shared_mask 		= mask;
-	shared_press_type 	= press_type;
 
 	/* NOTE : This function should not be modified, when the callback is needed,
             the buttonsCallback could be implemented in the user file

@@ -53,6 +53,7 @@ UART_HandleTypeDef huart2;
 RTC_HandleTypeDef hrtc;
 
 TIM_HandleTypeDef htim21;
+TIM_HandleTypeDef htim22;
 
 /* USER CODE BEGIN PV */
 extern RTC_TimeTypeDef rtc_time;
@@ -116,6 +117,7 @@ static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM21_Init(void);
 static void MX_LPTIM1_Init(void);
+static void MX_TIM22_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -158,6 +160,7 @@ int main(void)
   MX_RTC_Init();
   MX_TIM21_Init();
   MX_LPTIM1_Init();
+  MX_TIM22_Init();
   /* USER CODE BEGIN 2 */
 //  settings_init(s_ptr, settings_size);
   IN12_init();
@@ -165,6 +168,10 @@ int main(void)
 
   init_menu_items(&hmenu, items_list, num_of_items);
   btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
+
+  FIX_TIMER_TRIGGER(&htim22);
+  volatile sts = HAL_TIM_Base_Start_IT(&htim22);
+  sts = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -178,21 +185,27 @@ int main(void)
 
 	  IN12_set_digit_pairs(rtc_time.Hours, rtc_time.Minutes);
 
-	  btns_check(&hbtns);
+
 
 	  switch(shared_mask) {
 	  case MASK_LEFT:
 		  if (dir == 0) ++rtc_time.Hours;
 		  else			--rtc_time.Hours;
+		  if(rtc_time.Hours >= 24) rtc_time.Hours = 0;
 		  is_upd = 1;
 		  break;
+
 	  case MASK_RIGHT:
 		  if (dir == 0) ++rtc_time.Minutes;
 		  else			--rtc_time.Minutes;
+		  if(rtc_time.Minutes >= 59) rtc_time.Minutes = 0;
 		  is_upd = 1;
+		  break;
+
 	  case MASK_ENTER:
 		  dir = ~dir;
 		  break;
+
 	  default: is_upd = 0;
 	  }
 
@@ -201,11 +214,10 @@ int main(void)
 		  DS3231_EnableOscillator(DS3231_DISABLED);
 		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
 		  DS3231_EnableOscillator(DS3231_ENABLED);
+		  shared_mask = 0;
 	  }
-	  shared_mask = 0;
 
-	  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
-	  HAL_Delay(500);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -498,6 +510,51 @@ static void MX_TIM21_Init(void)
   /* USER CODE BEGIN TIM21_Init 2 */
 
   /* USER CODE END TIM21_Init 2 */
+
+}
+
+/**
+  * @brief TIM22 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM22_Init(void)
+{
+
+  /* USER CODE BEGIN TIM22_Init 0 */
+
+  /* USER CODE END TIM22_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM22_Init 1 */
+
+  /* USER CODE END TIM22_Init 1 */
+  htim22.Instance = TIM22;
+  htim22.Init.Prescaler = 32000-1;
+  htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim22.Init.Period = 500-1;
+  htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim22) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim22, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim22, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM22_Init 2 */
+
+  /* USER CODE END TIM22_Init 2 */
 
 }
 
