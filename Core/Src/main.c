@@ -179,41 +179,51 @@ int main(void)
   // 7-15 Volts input
   uint8_t dir = 0;
   uint8_t is_upd = 0;
+  uint32_t period = 10;
+  uint8_t duty_cycle = 1;
   while (1)
   {
 	  time_update();
 
 	  IN12_set_digit_pairs(rtc_time.Hours, rtc_time.Minutes);
+	  HAL_Delay(period-duty_cycle);
 
-
+	  OUTPUT_DISABLE();
+	  if(duty_cycle)
+		  HAL_Delay(duty_cycle);
 
 	  switch(shared_mask) {
 	  case MASK_LEFT:
-		  if (dir == 0) ++rtc_time.Hours;
-		  else			--rtc_time.Hours;
-		  if(rtc_time.Hours >= 24) rtc_time.Hours = 0;
+//		  if (dir == 0) ++rtc_time.Hours;
+//		  else			--rtc_time.Hours;
+//		  if(rtc_time.Hours >= 24) rtc_time.Hours = 0;
 		  is_upd = 1;
+		  if(duty_cycle > 0)
+			  --duty_cycle;
 		  break;
 
 	  case MASK_RIGHT:
-		  if (dir == 0) ++rtc_time.Minutes;
-		  else			--rtc_time.Minutes;
-		  if(rtc_time.Minutes >= 59) rtc_time.Minutes = 0;
+//		  if (dir == 0) ++rtc_time.Minutes;
+//		  else			--rtc_time.Minutes;
+//		  if(rtc_time.Minutes >= 59) rtc_time.Minutes = 0;
 		  is_upd = 1;
+		  if(duty_cycle < period - 1)
+			  ++duty_cycle;
+
 		  break;
 
 	  case MASK_ENTER:
-		  dir = ~dir;
+//		  dir = ~dir;
 		  break;
 
 	  default: is_upd = 0;
 	  }
 
 	  if(is_upd) {
-		  rtc_time.Seconds = 0;
-		  DS3231_EnableOscillator(DS3231_DISABLED);
-		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
-		  DS3231_EnableOscillator(DS3231_ENABLED);
+//		  rtc_time.Seconds = 0;
+//		  DS3231_EnableOscillator(DS3231_DISABLED);
+//		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+//		  DS3231_EnableOscillator(DS3231_ENABLED);
 		  shared_mask = 0;
 	  }
 

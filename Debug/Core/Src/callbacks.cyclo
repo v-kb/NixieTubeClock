@@ -1,2 +1,2 @@
 ../Core/Src/callbacks.c:16:6:btns_callback	1
-../Core/Src/callbacks.c:32:6:HAL_TIM_PeriodElapsedCallback	3
+../Core/Src/callbacks.c:32:6:HAL_TIM_PeriodElapsedCallback	2

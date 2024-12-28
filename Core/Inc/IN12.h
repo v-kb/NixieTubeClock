@@ -12,6 +12,8 @@
 #include <time.h>
 #include "ds3231_for_stm32_hal.h"
 
+#define OUTPUT_DISABLE()						HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, GPIO_PIN_SET)
+
 void time_update(void);
 void IN12_init(void);
 void IN12_set_digit_pairs(uint16_t first_number, uint16_t second_number);
