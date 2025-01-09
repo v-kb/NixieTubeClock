@@ -71,7 +71,9 @@ static HAL_StatusTypeDef btns_timer_start(Buttons_HandleTypeDef *hbtns) {
 		 * otherwise IT would occur immediately after the start
 		 */
 		FIX_TIMER_TRIGGER(hbtns->htim);
-		timer_status = HAL_TIM_Base_Start_IT(hbtns->htim);
+		timer_status += HAL_TIM_Base_Start_IT(hbtns->htim);
+
+		timer_status += HAL_TIM_OC_Start_IT(hbtns->htim, TIM_CHANNEL_1);
 	}
 
 	return (HAL_StatusTypeDef)timer_status;
