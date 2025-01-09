@@ -4,5 +4,5 @@
 ../Core/Src/IN12.c:101:6:IN12_set	1
 ../Core/Src/IN12.c:132:6:bitmask_set	3
 ../Core/Src/IN12.c:148:6:time_update	1
-../Core/Src/IN12.c:156:13:date_update	1
-../Core/Src/IN12.c:163:6:IN12_init	2
+../Core/Src/IN12.c:157:13:date_update	1
+../Core/Src/IN12.c:164:6:IN12_init	2

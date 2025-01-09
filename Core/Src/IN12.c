@@ -135,8 +135,8 @@ void bitmask_set(void) {
 
 	clock_data.is_digit_on[0][GET_MOST_SIGNIFICANT_DIGIT(rtc_time.Hours)] 		= true;
 	clock_data.is_digit_on[1][GET_LEAST_SIGNIFICANT_DIGIT(rtc_time.Hours)] 		= true;
-	clock_data.is_digit_on[2][GET_MOST_SIGNIFICANT_DIGIT(rtc_time.Minutes)] 	= true;
-	clock_data.is_digit_on[3][GET_LEAST_SIGNIFICANT_DIGIT(rtc_time.Minutes)] 	= true;
+	clock_data.is_digit_on[2][GET_MOST_SIGNIFICANT_DIGIT(rtc_time.Seconds)] 	= true;
+	clock_data.is_digit_on[3][GET_LEAST_SIGNIFICANT_DIGIT(rtc_time.Seconds)] 	= true;
 
 	for (int t = 0; t < NUM_OF_TUBES; ++t) {
 		for (int d = 0; d < NUM_OF_DIGITS; ++d) {

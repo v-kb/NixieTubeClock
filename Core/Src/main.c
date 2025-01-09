@@ -103,7 +103,7 @@ uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 
 
-uint16_t duty_cycles[4] = {50, 50, 50, 50};
+uint8_t duty_cycles[4] = {50, 50, 50, 50};
 
 
 
@@ -187,19 +187,20 @@ int main(void)
 
   volatile HAL_StatusTypeDef status = 0;
   status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
-//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[1], 1);
-//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[2], 1);
-//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[3], 1);
+  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[0], 1);
+  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[0], 1);
+  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[0], 1);
 
   status = HAL_TIM_Base_Start_IT(&htim2);
 
   // No need to fix interrupt being called right after the starting timer
   // Here it serve the purpose of updating important variables and setting bits in control registers
 
-  status = HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
+//  status = HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
   while (1)
   {
+
 	  if(flag_upd_time) {
 		  time_update();
 		  flag_upd_time = 0;
