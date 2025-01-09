@@ -181,6 +181,20 @@ int main(void)
   uint8_t is_upd = 0;
   uint32_t period = 10;
   uint8_t duty_cycle = 1;
+
+  uint16_t duty_cycles[4] = {50, 50, 50, 50};
+  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
+  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[1], 1);
+  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[2], 1);
+  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[3], 1);
+
+  HAL_TIM_Base_Start_IT(&htim2);
+
+  // No need to fix interrupt being called right after the starting timer
+  // Here it serve the purpose of updating important variables and setting bits in control registers
+
+  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_ALL);
+
   while (1)
   {
 	  time_update();
