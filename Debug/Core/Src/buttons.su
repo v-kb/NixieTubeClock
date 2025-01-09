@@ -1,6 +1,6 @@
-../Core/Src/buttons.c:55:13:btns_state_set	0	static
-../Core/Src/buttons.c:37:13:btns_state_get	16	static
-../Core/Src/buttons.c:62:26:btns_timer_start	8	static
+../Core/Src/buttons.c:37:13:btns_state_get	32	static
+../Core/Src/buttons.c:55:13:btns_state_set	16	static
+../Core/Src/buttons.c:62:26:btns_timer_start	32	static
+../Core/Src/buttons.c:80:6:btns_check	24	static
 ../Core/Src/buttons.c:122:19:btns_init	32	static
-../Core/Src/buttons.c:170:13:btns_callback	0	static
-../Core/Src/buttons.c:80:6:btns_check	8	static
+../Core/Src/buttons.c:170:13:btns_callback	16	static

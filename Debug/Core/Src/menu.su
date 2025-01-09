@@ -1,2 +1,5 @@
-../Core/Src/menu.c:133:6:init_menu_items	0	static
-../Core/Src/menu.c:147:6:init_menu_functions	0	static
+../Core/Src/menu.c:38:13:decrease_parameter	16	static
+../Core/Src/menu.c:47:20:init_items_hierarchy_horizontal	24	static
+../Core/Src/menu.c:97:20:init_items_hierarchy_vertical	8	static
+../Core/Src/menu.c:133:6:init_menu_items	24	static
+../Core/Src/menu.c:147:6:init_menu_functions	8	static

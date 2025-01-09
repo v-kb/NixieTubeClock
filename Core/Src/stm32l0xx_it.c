@@ -55,8 +55,12 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
+extern DMA_HandleTypeDef hdma_tim2_ch1;
+extern DMA_HandleTypeDef hdma_tim2_ch2;
+extern DMA_HandleTypeDef hdma_tim2_ch3;
+extern DMA_HandleTypeDef hdma_tim2_ch4;
+extern TIM_HandleTypeDef htim2;
 extern TIM_HandleTypeDef htim21;
-extern TIM_HandleTypeDef htim22;
 /* USER CODE BEGIN EV */
 
 /* USER CODE END EV */
@@ -142,6 +146,63 @@ void SysTick_Handler(void)
 /******************************************************************************/
 
 /**
+  * @brief This function handles DMA1 channel 1 interrupt.
+  */
+void DMA1_Channel1_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 0 */
+
+  /* USER CODE END DMA1_Channel1_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_tim2_ch3);
+  /* USER CODE BEGIN DMA1_Channel1_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel1_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA1 channel 2 and channel 3 interrupts.
+  */
+void DMA1_Channel2_3_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 0 */
+
+  /* USER CODE END DMA1_Channel2_3_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_tim2_ch2);
+  /* USER CODE BEGIN DMA1_Channel2_3_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel2_3_IRQn 1 */
+}
+
+/**
+  * @brief This function handles DMA1 channel 4, channel 5, channel 6 and channel 7 interrupts.
+  */
+void DMA1_Channel4_5_6_7_IRQHandler(void)
+{
+  /* USER CODE BEGIN DMA1_Channel4_5_6_7_IRQn 0 */
+
+  /* USER CODE END DMA1_Channel4_5_6_7_IRQn 0 */
+  HAL_DMA_IRQHandler(&hdma_tim2_ch4);
+  HAL_DMA_IRQHandler(&hdma_tim2_ch1);
+  /* USER CODE BEGIN DMA1_Channel4_5_6_7_IRQn 1 */
+
+  /* USER CODE END DMA1_Channel4_5_6_7_IRQn 1 */
+}
+
+/**
+  * @brief This function handles TIM2 global interrupt.
+  */
+void TIM2_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM2_IRQn 0 */
+
+  /* USER CODE END TIM2_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim2);
+  /* USER CODE BEGIN TIM2_IRQn 1 */
+
+  /* USER CODE END TIM2_IRQn 1 */
+}
+
+/**
   * @brief This function handles TIM21 global interrupt.
   */
 void TIM21_IRQHandler(void)
@@ -153,20 +214,6 @@ void TIM21_IRQHandler(void)
   /* USER CODE BEGIN TIM21_IRQn 1 */
 
   /* USER CODE END TIM21_IRQn 1 */
-}
-
-/**
-  * @brief This function handles TIM22 global interrupt.
-  */
-void TIM22_IRQHandler(void)
-{
-  /* USER CODE BEGIN TIM22_IRQn 0 */
-
-  /* USER CODE END TIM22_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim22);
-  /* USER CODE BEGIN TIM22_IRQn 1 */
-
-  /* USER CODE END TIM22_IRQn 1 */
 }
 
 /* USER CODE BEGIN 1 */

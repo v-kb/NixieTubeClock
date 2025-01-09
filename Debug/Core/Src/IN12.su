@@ -1,8 +1,8 @@
-../Core/Src/IN12.c:48:13:shift_reg_pulse_srclk	8	static
-../Core/Src/IN12.c:63:13:shift_reg_send	16	static
-../Core/Src/IN12.c:54:13:shift_reg_pulse_rclk	8	static
-../Core/Src/IN12.c:116:13:date_update	8	static
-../Core/Src/IN12.c:83:6:IN12_set_digits_separately	32	static
-../Core/Src/IN12.c:79:6:IN12_set_digit_pairs	24	static
-../Core/Src/IN12.c:110:6:time_update	8	static
-../Core/Src/IN12.c:123:6:IN12_init	8	static
+../Core/Src/IN12.c:52:13:shift_reg_pulse_srclk	16	static
+../Core/Src/IN12.c:58:13:shift_reg_pulse_rclk	16	static
+../Core/Src/IN12.c:67:13:shift_reg_send	32	static
+../Core/Src/IN12.c:101:6:IN12_set	8	static
+../Core/Src/IN12.c:132:6:bitmask_set	24	static
+../Core/Src/IN12.c:148:6:time_update	8	static
+../Core/Src/IN12.c:156:13:date_update	8	static
+../Core/Src/IN12.c:163:6:IN12_init	8	static

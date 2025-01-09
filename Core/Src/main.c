@@ -45,15 +45,17 @@
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
 
-LPTIM_HandleTypeDef hlptim1;
-
 UART_HandleTypeDef hlpuart1;
 UART_HandleTypeDef huart2;
 
 RTC_HandleTypeDef hrtc;
 
+TIM_HandleTypeDef htim2;
 TIM_HandleTypeDef htim21;
-TIM_HandleTypeDef htim22;
+DMA_HandleTypeDef hdma_tim2_ch1;
+DMA_HandleTypeDef hdma_tim2_ch2;
+DMA_HandleTypeDef hdma_tim2_ch3;
+DMA_HandleTypeDef hdma_tim2_ch4;
 
 /* USER CODE BEGIN PV */
 extern RTC_TimeTypeDef rtc_time;
@@ -101,7 +103,7 @@ uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 
 
-
+uint16_t duty_cycles[4] = {50, 50, 50, 50};
 
 
 
@@ -111,13 +113,13 @@ uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_LPUART1_UART_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_RTC_Init(void);
 static void MX_TIM21_Init(void);
-static void MX_LPTIM1_Init(void);
-static void MX_TIM22_Init(void);
+static void MX_TIM2_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -154,13 +156,13 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_DMA_Init();
   MX_I2C1_Init();
   MX_LPUART1_UART_Init();
   MX_USART2_UART_Init();
   MX_RTC_Init();
   MX_TIM21_Init();
-  MX_LPTIM1_Init();
-  MX_TIM22_Init();
+  MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
 //  settings_init(s_ptr, settings_size);
   IN12_init();
@@ -169,9 +171,9 @@ int main(void)
   init_menu_items(&hmenu, items_list, num_of_items);
   btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
 
-  FIX_TIMER_TRIGGER(&htim22);
-  volatile sts = HAL_TIM_Base_Start_IT(&htim22);
-  sts = 0;
+//  FIX_TIMER_TRIGGER(&htim22);
+//  volatile sts = HAL_TIM_Base_Start_IT(&htim22);
+//  sts = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -179,50 +181,46 @@ int main(void)
   // 7-15 Volts input
   uint8_t dir = 0;
   uint8_t is_upd = 0;
-  uint32_t period = 10;
+  uint32_t period = 100;
   uint8_t duty_cycle = 1;
 
-  uint16_t duty_cycles[4] = {50, 50, 50, 50};
-  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
-  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[1], 1);
-  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[2], 1);
-  HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[3], 1);
 
-  HAL_TIM_Base_Start_IT(&htim2);
+  volatile HAL_StatusTypeDef status = 0;
+  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
+//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[1], 1);
+//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[2], 1);
+//  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[3], 1);
+
+  status = HAL_TIM_Base_Start_IT(&htim2);
 
   // No need to fix interrupt being called right after the starting timer
   // Here it serve the purpose of updating important variables and setting bits in control registers
 
-  HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_ALL);
+  status = HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
 
   while (1)
   {
-	  time_update();
+	  if(flag_upd_time) {
+		  time_update();
+		  flag_upd_time = 0;
+	  }
 
-	  IN12_set_digit_pairs(rtc_time.Hours, rtc_time.Minutes);
-	  HAL_Delay(period-duty_cycle);
-
-	  OUTPUT_DISABLE();
-	  if(duty_cycle)
-		  HAL_Delay(duty_cycle);
+	  if(flag_upd_tubes) {
+		  IN12_set();
+		  flag_upd_tubes = 0;
+	  }
 
 	  switch(shared_mask) {
 	  case MASK_LEFT:
-//		  if (dir == 0) ++rtc_time.Hours;
-//		  else			--rtc_time.Hours;
-//		  if(rtc_time.Hours >= 24) rtc_time.Hours = 0;
 		  is_upd = 1;
-		  if(duty_cycle > 0)
-			  --duty_cycle;
+		  if(duty_cycles[0] > 10)
+			  duty_cycles[0] -= 10;
 		  break;
 
 	  case MASK_RIGHT:
-//		  if (dir == 0) ++rtc_time.Minutes;
-//		  else			--rtc_time.Minutes;
-//		  if(rtc_time.Minutes >= 59) rtc_time.Minutes = 0;
 		  is_upd = 1;
-		  if(duty_cycle < period - 1)
-			  ++duty_cycle;
+		  if(duty_cycles[0] < period - 10)
+			  duty_cycles[0] += 10;
 
 		  break;
 
@@ -293,14 +291,11 @@ void SystemClock_Config(void)
     Error_Handler();
   }
   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART2|RCC_PERIPHCLK_LPUART1
-                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC
-                              |RCC_PERIPHCLK_LPTIM1;
+                              |RCC_PERIPHCLK_I2C1|RCC_PERIPHCLK_RTC;
   PeriphClkInit.Usart2ClockSelection = RCC_USART2CLKSOURCE_PCLK1;
   PeriphClkInit.Lpuart1ClockSelection = RCC_LPUART1CLKSOURCE_PCLK1;
   PeriphClkInit.I2c1ClockSelection = RCC_I2C1CLKSOURCE_PCLK1;
   PeriphClkInit.RTCClockSelection = RCC_RTCCLKSOURCE_LSI;
-  PeriphClkInit.LptimClockSelection = RCC_LPTIM1CLKSOURCE_PCLK;
-
   if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit) != HAL_OK)
   {
     Error_Handler();
@@ -352,38 +347,6 @@ static void MX_I2C1_Init(void)
   /* USER CODE BEGIN I2C1_Init 2 */
 
   /* USER CODE END I2C1_Init 2 */
-
-}
-
-/**
-  * @brief LPTIM1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_LPTIM1_Init(void)
-{
-
-  /* USER CODE BEGIN LPTIM1_Init 0 */
-
-  /* USER CODE END LPTIM1_Init 0 */
-
-  /* USER CODE BEGIN LPTIM1_Init 1 */
-
-  /* USER CODE END LPTIM1_Init 1 */
-  hlptim1.Instance = LPTIM1;
-  hlptim1.Init.Clock.Source = LPTIM_CLOCKSOURCE_APBCLOCK_LPOSC;
-  hlptim1.Init.Clock.Prescaler = LPTIM_PRESCALER_DIV1;
-  hlptim1.Init.Trigger.Source = LPTIM_TRIGSOURCE_SOFTWARE;
-  hlptim1.Init.OutputPolarity = LPTIM_OUTPUTPOLARITY_HIGH;
-  hlptim1.Init.UpdateMode = LPTIM_UPDATE_IMMEDIATE;
-  hlptim1.Init.CounterSource = LPTIM_COUNTERSOURCE_INTERNAL;
-  if (HAL_LPTIM_Init(&hlptim1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN LPTIM1_Init 2 */
-
-  /* USER CODE END LPTIM1_Init 2 */
 
 }
 
@@ -493,6 +456,76 @@ static void MX_RTC_Init(void)
 }
 
 /**
+  * @brief TIM2 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM2_Init(void)
+{
+
+  /* USER CODE BEGIN TIM2_Init 0 */
+
+  /* USER CODE END TIM2_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+  TIM_OC_InitTypeDef sConfigOC = {0};
+
+  /* USER CODE BEGIN TIM2_Init 1 */
+
+  /* USER CODE END TIM2_Init 1 */
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 3200-1;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 100-1;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_Init(&htim2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sConfigOC.OCMode = TIM_OCMODE_PWM1;
+  sConfigOC.Pulse = 0;
+  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
+  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_2) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM2_Init 2 */
+
+  /* USER CODE END TIM2_Init 2 */
+
+}
+
+/**
   * @brief TIM21 Initialization Function
   * @param None
   * @retval None
@@ -538,47 +571,24 @@ static void MX_TIM21_Init(void)
 }
 
 /**
-  * @brief TIM22 Initialization Function
-  * @param None
-  * @retval None
+  * Enable DMA controller clock
   */
-static void MX_TIM22_Init(void)
+static void MX_DMA_Init(void)
 {
 
-  /* USER CODE BEGIN TIM22_Init 0 */
+  /* DMA controller clock enable */
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
-  /* USER CODE END TIM22_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM22_Init 1 */
-
-  /* USER CODE END TIM22_Init 1 */
-  htim22.Instance = TIM22;
-  htim22.Init.Prescaler = 32000-1;
-  htim22.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim22.Init.Period = 500-1;
-  htim22.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim22.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim22) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim22, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim22, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM22_Init 2 */
-
-  /* USER CODE END TIM22_Init 2 */
+  /* DMA interrupt init */
+  /* DMA1_Channel1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel1_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel1_IRQn);
+  /* DMA1_Channel2_3_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel2_3_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel2_3_IRQn);
+  /* DMA1_Channel4_5_6_7_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Channel4_5_6_7_IRQn, 1, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Channel4_5_6_7_IRQn);
 
 }
 
@@ -643,14 +653,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = INS_EN_3V3_Pin|DIN_3V3_Pin|OE_3V3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : RCK_3V3_Pin SCK_3V3_Pin */
   GPIO_InitStruct.Pin = RCK_3V3_Pin|SCK_3V3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BTN_3_Pin BTN_2_Pin BTN_1_Pin */
