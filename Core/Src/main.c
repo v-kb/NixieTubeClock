@@ -69,18 +69,18 @@ Button_InitTypeDef btns_list[] = {
 		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET}
 };
 Item_TypeDef items_list[] = {
-		{"FW VERSION",  			MAIN, 		NULL,     							2},
-		{"COMPILE DATE",			MAIN, 		NULL,     							2},
-		{"YEAR",     				MAIN, 		NULL,     							2},
-		{"MONTH",     				MAIN, 		NULL,     							0},
-		{"DAY",     				MAIN, 		NULL,								1},
-		{"HOURS",     				MAIN, 		NULL,								1},
-		{"MINUTES",     			MAIN, 		NULL,								1},
-		{"SECONDS",     			MAIN, 		NULL,								1},
-		{"TUBES BRIGHTNESS ADJUST", SETTINGS, 	&s_ptr[TUBES_BRIGHTNESS_ADJUST],	0},
-		{"AMBIENT LIGHT SENSOR",    SETTINGS, 	&s_ptr[AMBIENT_LIGHT_SENSOR], 		1},
-		{"TEMPERATURE SENSOR",     	SETTINGS, 	&s_ptr[TEMPERATURE_SENSOR], 		1},
-		{"BLUETOOTH",     			SETTINGS, 	&s_ptr[BLUETOOTH], 					1},
+		{"FW VERSION",  			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"COMPILE DATE",			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"YEAR",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"MONTH",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"DAY",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"HOURS",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"MINUTES",     			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"SECONDS",     			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
+		{"TUBES BRIGHTNESS ADJUST", .parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[TUBES_BRIGHTNESS_ADJUST]},
+		{"AMBIENT LIGHT SENSOR",    .parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[AMBIENT_LIGHT_SENSOR]},
+		{"TEMPERATURE SENSOR",     	.parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[TEMPERATURE_SENSOR]},
+		{"BLUETOOTH",     			.parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[BLUETOOTH]},
 };
 Setting_TypeDef s_ptr[] = {
 		// Name				Current value	  Default	Delta	  Min		Max				Need to save		  Cyclic change

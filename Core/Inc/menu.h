@@ -13,41 +13,47 @@
 #include "settings.h"
 
 /*
- * Overall, menu structure should look like this.
+ * Menu structure should look like this:
  *
  *  Menu Name	| Description
- * 1. BOOT 		- Shows current version of FW and compile date. Do not have any adjustable items.
- * 2. MAIN 		- DD:MM & YYYY & HH:MM; or HH:MM & Temp;
- * 3. TIMER 	- Timer and Alarms (and mb other widgets, such as bluetooth)
- * 4. SETTINGS:
- * 				- On/Off ambient light sensor (when off, brightness is adjusted manually)
+ *
+ * *1. BOOT 	- Do not have any adjustable items. Shows current versions of:
+ * 				- Preview: [FW -> delay 200ms -> compile date]
+ *
+ * 2. MAIN 		- Shows date, time and temp.
+ * 				- Preview: [ Temp <- MM:SS <- HH:MM -> DD:MM -> YYYY ]
+ *
+ * 4. SETTINGS:	- On/Off ambient light sensor (when off, brightness is adjusted manually)
  * 				- Manual brightness
+ * 				- Timer and Alarms
  * 				- Bluetooth on/off/connect/forget
  * 				- Display style
  * 				- Transitions style
  * 				- Tubes life extension algorithm
  */
 
-
+/*
+ * Controls:
+ * 1. Left and right short  - always either choose item or change it's value when selected.
+ * 2. Enter short - is to go one step down the menu tree and
+ */
 
 
 typedef struct Item {
 	const char*				name;
-	MenuType				menu;					// Menu, related to the Item
+	uint8_t					menu;					// Menu, related to the Item
 	Setting_TypeDef* 		s_ptr;                  // Pointer to the related setting
-//	Settings_IDs 			s_id;
-//	uint8_t					cyclic_change;
 	uint16_t 				parent;
 	uint16_t 				child;
 	uint16_t 				prev;
 	uint16_t 				next;
-	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES])(void* param);
+	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][2])(void* param);
 } Item_TypeDef;
 
 typedef struct {
 	Item_TypeDef*			items;
-	ItemType   				current_item;				// Currently selected item
-	ItemType*   			current_item_ptr;				// Currently selected item
+	uint16_t   				current_item;				// Currently selected item
+//	uint16_t*   			current_item_ptr;				// Currently selected item
 	int						is_selected;			// Shows if current item selected to change it's value
 } Menu_HandleTypeDef;
 

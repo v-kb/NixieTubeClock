@@ -99,10 +99,11 @@ void Error_Handler(void);
 #define NUM_OF_BTN_COMBINATIONS		(MASK_LEFT|MASK_RIGHT|MASK_ENTER)
 
 typedef enum {
-	BOOT,
+//	BOOT,
 	MAIN,
-//	TIMER,
 	SETTINGS,
+
+//	*BLUETOOTH // - Includes name of the device, connection, reset, etc.
 
 	NUM_OF_MENUS
 } MenuType;
@@ -112,16 +113,20 @@ typedef enum {
 
 	FW_VERSION,
 	COMPILE_DATE,
+
 	YEAR,
 	MONTH,
 	DAY,
 	HOURS,
 	MINUTES,
 	SECONDS,
-	TUBES_BRIGHTNESS_ADJUST,
-	AMBIENT_LIGHT_SENSOR,
-	TEMPERATURE_SENSOR,
-	BLUETOOTH,
+
+	BRIGHTNESS_ADJUST,
+	AMBIENT_LIGHT_SENSOR_EN,
+	TEMPERATURE_SENSOR_EN,
+	FACTORY_RESET,
+
+//	BLUETOOTH,
 
 //	NUM_OF_ITEMS
 } ItemType;
