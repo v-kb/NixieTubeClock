@@ -38,27 +38,34 @@
  * 2. Enter short - is to go one step down the menu tree and
  */
 
+//typedef struct {
+//
+//} Tree_TypeDef;
 
 typedef struct Item {
-	const char*				name;
-	uint8_t					menu;					// Menu, related to the Item
+//	const char*				name;
+	MenuType				menu;					// Menu, related to the Item
 	Setting_TypeDef* 		s_ptr;                  // Pointer to the related setting
-	uint16_t 				parent;
-	uint16_t 				child;
-	uint16_t 				prev;
-	uint16_t 				next;
-	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][2])(void* param);
+//	uint16_t 				parent;
+//	uint16_t 				child;
+	ItemType 				prev;
+	ItemType 				next;
+	uint16_t				numbers[2];
+	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
 } Item_TypeDef;
 
 typedef struct {
 	Item_TypeDef*			items;
-	uint16_t   				current_item;				// Currently selected item
+	ItemType   				current_item;				// Currently selected item
 //	uint16_t*   			current_item_ptr;				// Currently selected item
-	int						is_selected;			// Shows if current item selected to change it's value
+	uint8_t					is_selected;			// Shows if current item selected to change it's value
 } Menu_HandleTypeDef;
 
-//void (*menu[NUM_OF_ITEMS][MASK_LEFT|MASK_RIGHT|MASK_ENTER][NUM_OF_PRESS_TYPES])(void* param);
-void init_menu_items(Menu_HandleTypeDef* user_hmenu, Item_TypeDef* user_items, uint16_t num_of_items);
+extern void (*logic[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
+void init_menu_items(Menu_HandleTypeDef* user_menu, Item_TypeDef* user_items, uint16_t number_of_menus, uint16_t number_of_items);
 void init_menu_functions(void);
+
+void item_goto_prev(void);
+void item_goto_next(void);
 
 #endif /* INC_MENU_H_ */

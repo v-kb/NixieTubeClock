@@ -1,5 +1,11 @@
-../Core/Src/menu.c:38:13:decrease_parameter	1
-../Core/Src/menu.c:47:20:init_items_hierarchy_horizontal	1
-../Core/Src/menu.c:97:20:init_items_hierarchy_vertical	1
-../Core/Src/menu.c:133:6:init_menu_items	1
-../Core/Src/menu.c:147:6:init_menu_functions	1
+menu.c:44:13:decrease_parameter	1
+menu.c:54:20:init_items_hierarchy_horizontal	8
+menu.c:141:6:init_menu_items	1
+menu.c:170:6:item_goto_prev	1
+menu.c:174:6:item_goto_next	1
+menu.c:177:6:item_selection_cycle	6
+menu.c:200:6:hours_decrease	2
+menu.c:204:6:hours_increase	2
+menu.c:208:6:minutes_decrease	2
+menu.c:212:6:minutes_increase	2
+menu.c:217:6:init_menu_functions	5

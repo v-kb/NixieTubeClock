@@ -94,11 +94,20 @@ void Error_Handler(void);
 
 /* USER CODE BEGIN Private defines */
 #define MASK_LEFT					1
-#define MASK_RIGHT					2
-#define MASK_ENTER					4
-#define NUM_OF_BTN_COMBINATIONS		(MASK_LEFT|MASK_RIGHT|MASK_ENTER)
+#define MASK_ENTER					2
+#define MASK_RIGHT					4
+#define NUM_OF_BTN_COMBINATIONS		((MASK_LEFT|MASK_RIGHT|MASK_ENTER) + 1)
 
 typedef enum {
+	DESELECTED,
+	SELECTED_FIRST_NUM,
+	SELECTED_SECOND_NUM,
+
+	NUM_OF_SELECTIONS
+} SelectionType;
+
+typedef enum {
+	NO_MENU,
 //	BOOT,
 	MAIN,
 	SETTINGS,
@@ -115,20 +124,19 @@ typedef enum {
 	COMPILE_DATE,
 
 	YEAR,
-	MONTH,
-	DAY,
-	HOURS,
-	MINUTES,
-	SECONDS,
+	DAY_MONTH,
+	HOURS_MINUTES,
+	MINUTES_SECONDS,
 
 	BRIGHTNESS_ADJUST,
 	AMBIENT_LIGHT_SENSOR_EN,
 	TEMPERATURE_SENSOR_EN,
+
 	FACTORY_RESET,
 
 //	BLUETOOTH,
 
-//	NUM_OF_ITEMS
+	NUM_OF_ITEMS
 } ItemType;
 /* USER CODE END Private defines */
 

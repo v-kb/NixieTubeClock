@@ -8,25 +8,16 @@
 #include "IN12.h"
 
 
-//uint8_t actions[7][5] = {
-//
-//};
 extern TIM_HandleTypeDef 		htim2;
 extern TIM_HandleTypeDef 		htim21;
 extern Buttons_HandleTypeDef 	hbtns;
 
+extern uint8_t duty_cycles[4];
+
+
 void btns_callback(uint16_t mask, PressType_TypeDef press_type) {
 	shared_mask 		= mask;
 	shared_press_type 	= press_type;
-
-	//	switch (mask) {
-	//	case MASK_LEFT:
-	//		break;
-	//	case MASK_RIGHT:
-	//		break;
-	//
-	//	default: break;
-	//	}
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
@@ -35,11 +26,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 		bitmask_set(); // restore values
 		if(!flag_upd_tubes)
 			flag_upd_tubes = 1;
-//		IN12_set();
 	}
 
 	if(htim == &htim21) {
-		flag_upd_time = 1;
+		++count_50_ms;
+		if (count_50_ms >= 20) {
+			flag_upd_time = 1;
+			flag_upd_dots = 1;
+			count_50_ms = 0;
+		}
+		if (count_50_ms % 10 == 0) {
+		}
+		btns_check(&hbtns);
 	}
 }
 
@@ -54,16 +52,5 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
 		}
 		if(!flag_upd_tubes)
 			flag_upd_tubes = 1;
-//		IN12_set();
-	}
-}
-
-void HAL_TIM_OC_DelayElapsedCallback(TIM_HandleTypeDef *htim) {
-	static uint16_t compare_value = 49;
-	if(htim == hbtns.htim) {
-		compare_value = compare_value > 999 ? 49 : compare_value + 50;
-		__HAL_TIM_SET_COMPARE(htim, TIM_CHANNEL_1, compare_value);
-		btns_check(&hbtns);
-//		htim->Instance->CCMR1 += 50;
 	}
 }

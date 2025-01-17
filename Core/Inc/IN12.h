@@ -21,6 +21,8 @@
 typedef struct {
 //	RTC_TimeTypeDef time; 									// Hours, minutes, seconds - this will be in settings...
 //	RTC_DateTypeDef date;									// Year, month, date
+	uint16_t* first_number;
+	uint16_t* second_number;
 	bool is_digit_on[NUM_OF_TUBES][NUM_OF_DIGITS];			// True means digit X in a tube Y is now turned on
 	union {
 		uint16_t tube[NUM_OF_TUBES];
@@ -32,11 +34,13 @@ typedef struct {
 extern ClockData_HandleTypeDef clock_data;
 extern uint8_t flag_upd_tubes;
 extern uint8_t flag_upd_time;
+extern uint8_t flag_upd_dots;
 
 void time_update(void);
 void IN12_init(void);
 //void IN12_set_digit_pairs(uint16_t first_number, uint16_t second_number);
 void IN12_set(void);
 void bitmask_set(void);
+void tubes_data_source_set(uint16_t* first_number_src, uint16_t* second_number_src);
 
 #endif /* INC_IN12_H_ */

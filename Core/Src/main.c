@@ -65,22 +65,21 @@ Buttons_HandleTypeDef 	hbtns;
 
 Button_InitTypeDef btns_list[] = {
 		{"Left", 	BTN_1_GPIO_Port, BTN_1_Pin, GPIO_PIN_RESET},
-		{"Right", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
-		{"Enter", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET}
+		{"Enter", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
+		{"Right", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET},
 };
 Item_TypeDef items_list[] = {
-		{"FW VERSION",  			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"COMPILE DATE",			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"YEAR",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"MONTH",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"DAY",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"HOURS",     				.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"MINUTES",     			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"SECONDS",     			.parent = NO_ITEM, menu = MAIN, 		.child = NO_ITEM, .s_ptr = NULL},
-		{"TUBES BRIGHTNESS ADJUST", .parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[TUBES_BRIGHTNESS_ADJUST]},
-		{"AMBIENT LIGHT SENSOR",    .parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[AMBIENT_LIGHT_SENSOR]},
-		{"TEMPERATURE SENSOR",     	.parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[TEMPERATURE_SENSOR]},
-		{"BLUETOOTH",     			.parent = NO_ITEM, menu = SETTINGS, 	.child = NO_ITEM, .s_ptr = &s_ptr[BLUETOOTH]},
+		{.menu = NO_MENU, 	.s_ptr = NULL, .numbers = {0, 0}}, // "NO_ITEM",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {0, 5}}, // "FW VERSION",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {22, 05}}, // "COMPILE DATE",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {20, 25}}, // "YEAR",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {17, 01}}, // "DAY_MONTH",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {22, 8}}, // "HOURS_MINUTES",
+		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {8, 30}}, // "MINUTES_SECONDS",
+		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {1, 3}}, // "TUBES BRIGHTNESS ADJUST",
+		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {2, 4}}, // "AMBIENT LIGHT SENSOR",
+		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {3, 5}}, // "TEMPERATURE SENSOR",
+		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {4, 6}}, // "BLUETOOTH",
 };
 Setting_TypeDef s_ptr[] = {
 		// Name				Current value	  Default	Delta	  Min		Max				Need to save		  Cyclic change
@@ -103,7 +102,7 @@ uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 
 
-uint8_t duty_cycles[4] = {50, 50, 50, 50};
+
 
 
 
@@ -168,7 +167,7 @@ int main(void)
   IN12_init();
   DS3231_Init(&hi2c1);
 
-  init_menu_items(&hmenu, items_list, num_of_items);
+  init_menu_items(&hmenu, items_list, NUM_OF_MENUS, NUM_OF_ITEMS);
   btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
 
 //  FIX_TIMER_TRIGGER(&htim22);
@@ -179,19 +178,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // 7-15 Volts input
-  uint8_t dir = 0;
-  uint8_t is_upd = 0;
-  uint32_t period = 100;
-  uint8_t duty_cycle = 1;
+//  uint8_t dir = 0;
+//  uint8_t is_upd = 0;
+//  uint32_t period = 100;
+//  uint8_t duty_cycle = 1;
 
 
-  volatile HAL_StatusTypeDef status = 0;
-  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
-  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[0], 1);
-  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[0], 1);
-  status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[0], 1);
 
-  status = HAL_TIM_Base_Start_IT(&htim2);
 
   // No need to fix interrupt being called right after the starting timer
   // Here it serve the purpose of updating important variables and setting bits in control registers
@@ -200,9 +193,13 @@ int main(void)
 
   while (1)
   {
-
+	  // must update when digits are active
 	  if(flag_upd_time) {
 		  time_update();
+		  items_list[HOURS_MINUTES].numbers[0] = DS3231_GetHour();
+		  items_list[HOURS_MINUTES].numbers[1] = DS3231_GetMinute();
+		  items_list[MINUTES_SECONDS].numbers[0] = items_list[HOURS_MINUTES].numbers[1];
+		  items_list[MINUTES_SECONDS].numbers[1] = DS3231_GetSecond();
 		  flag_upd_time = 0;
 	  }
 
@@ -211,33 +208,45 @@ int main(void)
 		  flag_upd_tubes = 0;
 	  }
 
-	  switch(shared_mask) {
-	  case MASK_LEFT:
-		  is_upd = 1;
-		  if(duty_cycles[0] > 10)
-			  duty_cycles[0] -= 10;
-		  break;
-
-	  case MASK_RIGHT:
-		  is_upd = 1;
-		  if(duty_cycles[0] < period - 10)
-			  duty_cycles[0] += 10;
-
-		  break;
-
-	  case MASK_ENTER:
-//		  dir = ~dir;
-		  break;
-
-	  default: is_upd = 0;
+	  if(flag_upd_dots) {
+		  flag_upd_dots = 0;
+		  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
 	  }
 
-	  if(is_upd) {
-//		  rtc_time.Seconds = 0;
-//		  DS3231_EnableOscillator(DS3231_DISABLED);
-//		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
-//		  DS3231_EnableOscillator(DS3231_ENABLED);
+//	  switch(shared_mask) {
+//	  case MASK_LEFT:
+//		  is_upd = 1;
+//		  if(duty_cycles[0] > 10)
+//			  duty_cycles[0] -= 10;
+//		  break;
+//
+//	  case MASK_RIGHT:
+//		  is_upd = 1;
+//		  if(duty_cycles[0] < period - 10)
+//			  duty_cycles[0] += 10;
+//
+//		  break;
+//
+//	  case MASK_ENTER:
+////		  dir = ~dir;
+//		  break;
+//
+//	  default: is_upd = 0;
+//	  }
+//
+//	  if(is_upd) {
+////		  rtc_time.Seconds = 0;
+////		  DS3231_EnableOscillator(DS3231_DISABLED);
+////		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
+////		  DS3231_EnableOscillator(DS3231_ENABLED);
+//		  shared_mask = 0;
+//	  }
+
+	  if(logic[hmenu.current_item][shared_mask][shared_press_type][hmenu.is_selected] != NULL) {
+		  (*logic[hmenu.current_item][shared_mask][shared_press_type][hmenu.is_selected])();
+		  tubes_data_source_set(&(items_list[hmenu.current_item].numbers[0]), &(items_list[hmenu.current_item].numbers[1]));
 		  shared_mask = 0;
+		  shared_press_type = 0;
 	  }
 
 
@@ -540,7 +549,6 @@ static void MX_TIM21_Init(void)
 
   TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
-  TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM21_Init 1 */
 
@@ -548,7 +556,7 @@ static void MX_TIM21_Init(void)
   htim21.Instance = TIM21;
   htim21.Init.Prescaler = 32000-1;
   htim21.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim21.Init.Period = 1000-1;
+  htim21.Init.Period = 50-1;
   htim21.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim21.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim21) != HAL_OK)
@@ -560,25 +568,12 @@ static void MX_TIM21_Init(void)
   {
     Error_Handler();
   }
-  if (HAL_TIM_OC_Init(&htim21) != HAL_OK)
-  {
-    Error_Handler();
-  }
   sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim21, &sMasterConfig) != HAL_OK)
   {
     Error_Handler();
   }
-  sConfigOC.OCMode = TIM_OCMODE_TIMING;
-  sConfigOC.Pulse = 50-1;
-  sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
-  sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
-  if (HAL_TIM_OC_ConfigChannel(&htim21, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  __HAL_TIM_ENABLE_OCxPRELOAD(&htim21, TIM_CHANNEL_1);
   /* USER CODE BEGIN TIM21_Init 2 */
 
   /* USER CODE END TIM21_Init 2 */

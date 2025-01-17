@@ -1,6 +1,6 @@
-../Core/Src/buttons.c:37:13:btns_state_get	3
-../Core/Src/buttons.c:55:13:btns_state_set	1
-../Core/Src/buttons.c:62:26:btns_timer_start	2
-../Core/Src/buttons.c:82:6:btns_check	6
-../Core/Src/buttons.c:124:19:btns_init	3
-../Core/Src/buttons.c:172:13:btns_callback	1
+buttons.c:37:13:btns_state_get	3
+buttons.c:55:13:btns_state_set	1
+buttons.c:62:26:btns_timer_start	2
+buttons.c:82:6:btns_check	6
+buttons.c:124:19:btns_init	3
+buttons.c:172:13:btns_callback	1

@@ -5,6 +5,8 @@
  *      Author: v_
  */
 #include "menu.h"
+#include "ds3231_for_stm32_hal.h"
+#include "IN12.h"
 
 /*
  * Overall, menu structure should look like this.
@@ -22,21 +24,24 @@
  * 				- Tubes life extension algorithm
  */
 
+/*
+ * menu [item 1, item 2,	item 3, item 4 ...]
+ * 	|				|		  	|	 	|
+ * 	|			menu2 [...]		|		|
+ * 	|							menu3 [...]
+ * 	\--- menu4 [...]
+ */
 
+extern TIM_HandleTypeDef htim2;
 
 Menu_HandleTypeDef* 	menu;
 Item_TypeDef* 			items;
-ItemType				item_parent	[200];	// Items lists, describes menu hierarchy: 	up one level,
-ItemType				item_child	[200];	//											down one level (submenu),
-ItemType				item_prev	[200];	//											previous item,
-ItemType				item_next	[200];	//
 
-uint16_t 				num_of_items;
-uint16_t 				num_of_menus;
+uint8_t duty_cycles[4] = {90, 90, 90, 90};
 
-//void (*menu[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][2])(void* param);
+void (*logic[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
 
-static void decrease_parameter(void* param) {
+static void decrease_parameter(void) {
 //	if(is_selected) {
 //		settings_val_dec();
 //		settings_save = 1;
@@ -45,8 +50,9 @@ static void decrease_parameter(void* param) {
 //	}
 }
 
+
 static inline void init_items_hierarchy_horizontal(void) {
-	ItemType current 	= 1;
+	ItemType selected 	= 1;
 	ItemType first_item = 0;
 
 	/*
@@ -54,128 +60,200 @@ static inline void init_items_hierarchy_horizontal(void) {
 	 * We iterate through each item and compare it's menu type with selected menu type
 	 * If it's a match, then write this item as the next
 	 */
-	for(int target_menu = 0; target_menu < num_of_menus; ++target_menu) {
-		for(int i = 0; i < num_of_items; ++i) {
-			if(menu->items[i].menu == target_menu) {
+	for(MenuType target_menu = 0; target_menu < NUM_OF_MENUS; ++target_menu) {
+		for(ItemType i = 0; i < NUM_OF_ITEMS; ++i) {
+			if(items[i].menu == target_menu) {
 				/*
 				 * Find the first item in list
+				 * if it was not set earlier (item == 0)
 				 * And break the current iteration of the cycle
 				 */
 				if(first_item == 0) {
-					first_item = current = i;
+					first_item = selected = i;
 					continue;
 				}
 
 				/*
 				 * Find the next
 				 */
-				menu->items[current].next = i;
-				current = i;
+				items[selected].next = i;
+				selected = i;
 			}
 		}
 		/*
 		 * Also assign the last value to be the first one
 		 */
-		item_next[current] = first_item;
+		items[selected].next = first_item;
 
 		/*
 		 * Reset values before searching in the next menu
 		 */
-		current = first_item = 0;
+		selected = first_item = 0;
 	}
 
 	/*
 	 * To find previous item we need to simply find the array index
 	 */
-	for(int current = 1; current < num_of_items; ++current) {
-		for(int prev = 1; prev < num_of_items; ++prev) {
-			if(menu->items[prev].next == current)
-				menu->items[current].prev = prev;
+	for(int current = 1; current < NUM_OF_ITEMS; ++current) {
+		for(int prev = 1; prev < NUM_OF_ITEMS; ++prev) {
+			if(items[prev].next == current)
+				items[current].prev = prev;
 		}
 	}
 }
 
-static inline void init_items_hierarchy_vertical(void) {
-	for(int i = 0; i < num_of_items; ++i) {
-		menu->items[i].parent 	= NO_ITEM;
-		menu->items[i].child 	= NO_ITEM;
-	}
-
-	menu->items[FW_VERSION].child = menu->items[COMPILE_DATE].child = FACTORY_RESET;
-	item_child[ITEM_SETTINGS_ENTER] 		= ITEM_PROFILE;
-	item_child[ITEM_PROFILE] 				= ITEM_SIGHTING_UNITS;
-	item_child[ITEM_SIGHTING] 				= ITEM_MARK_TYPE;
-	item_child[ITEM_MARK_TYPE] 				= s_ptr[MARK_TYPE].val == 0 ? ITEM_AMMO_TYPE : ITEM_GRID_X; // Need to monitor which mark type we have
-	item_child[ITEM_AMMO_TYPE] 				= ITEM_MARK_X;
-	item_child[ITEM_BAD_PIXELS_FIX_ENTER] 	= ITEM_BAD_PIXELS_FIX_AUTO;
+//static inline void init_items_hierarchy_vertical(void) {
+//	for(int i = 0; i < num_of_items; ++i) {
+//		menu->items[i].parent 	= NO_ITEM;
+//		menu->items[i].child 	= NO_ITEM;
+//	}
 //
-//	item_parent[ITEM_ZOOM] 		        	= ITEM_MAIN_SCREEN;
-//	item_parent[ITEM_SIGHTING_UNITS] 		= ITEM_PROFILE;
-//	item_parent[ITEM_IDE] 					= ITEM_PROFILE;
-//	item_parent[ITEM_CALIBRATION] 			= ITEM_PROFILE;
-//	item_parent[ITEM_MARK_TYPE] 			= ITEM_SIGHTING;
-//	item_parent[ITEM_AMMO_TYPE] 			= ITEM_MARK_TYPE;
-//	item_parent[ITEM_MARK_X] 				= ITEM_AMMO_TYPE;
-//	item_parent[ITEM_MARK_Y] 				= ITEM_AMMO_TYPE;
-//	item_parent[ITEM_GRID_X] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_Y] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_2] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_3] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_4] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_5] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_6] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_7] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_8] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_GRID_9] 				= ITEM_MARK_TYPE;
-//	item_parent[ITEM_BAD_PIXELS_FIX_AUTO] 	= ITEM_BAD_PIXELS_FIX_ENTER;
-//	item_parent[ITEM_SETTINGS_EXIT] 		= ITEM_SETTINGS_ENTER;
-}
+//	menu->items[FW_VERSION].child = menu->items[COMPILE_DATE].child = FACTORY_RESET;
+//	menu->items[ITEM_SETTINGS_ENTER].child 		= ITEM_PROFILE;
+//	menu->items[ITEM_PROFILE].child 				= ITEM_SIGHTING_UNITS;
+//	menu->items[ITEM_SIGHTING].child 				= ITEM_MARK_TYPE;
+//	menu->items[ITEM_MARK_TYPE].child 				= s_ptr[MARK_TYPE].val == 0 ? ITEM_AMMO_TYPE : ITEM_GRID_X; // Need to monitor which mark type we have
+//	menu->items[ITEM_AMMO_TYPE].child 				= ITEM_MARK_X;
+//	menu->items[ITEM_BAD_PIXELS_FIX_ENTER].child 	= ITEM_BAD_PIXELS_FIX_AUTO;
+////
+////	item_parent[ITEM_ZOOM] 		        	= ITEM_MAIN_SCREEN;
+////	item_parent[ITEM_SIGHTING_UNITS] 		= ITEM_PROFILE;
+////	item_parent[ITEM_IDE] 					= ITEM_PROFILE;
+////	item_parent[ITEM_CALIBRATION] 			= ITEM_PROFILE;
+////	item_parent[ITEM_MARK_TYPE] 			= ITEM_SIGHTING;
+////	item_parent[ITEM_AMMO_TYPE] 			= ITEM_MARK_TYPE;
+////	item_parent[ITEM_MARK_X] 				= ITEM_AMMO_TYPE;
+////	item_parent[ITEM_MARK_Y] 				= ITEM_AMMO_TYPE;
+////	item_parent[ITEM_GRID_X] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_Y] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_2] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_3] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_4] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_5] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_6] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_7] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_8] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_GRID_9] 				= ITEM_MARK_TYPE;
+////	item_parent[ITEM_BAD_PIXELS_FIX_AUTO] 	= ITEM_BAD_PIXELS_FIX_ENTER;
+////	item_parent[ITEM_SETTINGS_EXIT] 		= ITEM_SETTINGS_ENTER;
+//}
 
-void init_menu_items(Menu_HandleTypeDef* user_hmenu, Item_TypeDef* user_items, uint16_t number_of_menus, uint16_t number_of_items) {
+void init_menu_items(Menu_HandleTypeDef* user_menu, Item_TypeDef* user_items, uint16_t number_of_menus, uint16_t number_of_items) {
 	assert_param(user_hmenu == NULL);
 	assert_param(user_items == NULL);
 
-	menu 				= user_hmenu;
-	menu->items 		= user_items;
-	num_of_items		= number_of_items;
-	num_of_menus		= number_of_menus;
+	menu 				= user_menu;
+	items 				= user_items;
+//	num_of_items		= number_of_items;
+//	num_of_menus		= number_of_menus;
 
 //	menu->current_item 	= FW_VERSION; // Show FW version and compile date on start
 
-	init_items_hierarchy_vertical	();
+//	init_items_hierarchy_vertical	();
 	init_items_hierarchy_horizontal	();
+
+	init_menu_functions();
+
+	volatile HAL_StatusTypeDef status = 0;
+	status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_1, (uint32_t *)&duty_cycles[0], 1);
+	status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_2, (uint32_t *)&duty_cycles[1], 1);
+	status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_3, (uint32_t *)&duty_cycles[2], 1);
+	status = HAL_TIM_PWM_Start_DMA(&htim2, TIM_CHANNEL_4, (uint32_t *)&duty_cycles[3], 1);
+
+	status = HAL_TIM_Base_Start_IT(&htim2);
+
+	menu->current_item = HOURS_MINUTES;
+
+	 tubes_data_source_set(&(items[menu->current_item].numbers[0]), &(items[menu->current_item].numbers[1]));
+}
+
+void item_goto_prev(void) {
+	menu->current_item = items[menu->current_item].prev;
+}
+
+void item_goto_next(void) {
+	menu->current_item = items[menu->current_item].next;
+}
+void item_selection_cycle(void) {
+	menu->is_selected = menu->is_selected < NUM_OF_SELECTIONS-1 ? menu->is_selected + 1 : 0;
+	switch (menu->is_selected) {
+		case DESELECTED:
+			menu->is_selected = SELECTED_FIRST_NUM;
+			duty_cycles[0] = duty_cycles[1] = 90;
+			duty_cycles[2] = duty_cycles[3] = 30;
+			break;
+		case SELECTED_FIRST_NUM:
+			menu->is_selected = SELECTED_SECOND_NUM;
+			duty_cycles[0] = duty_cycles[1] = 30;
+			duty_cycles[2] = duty_cycles[3] = 90;
+			break;
+		case SELECTED_SECOND_NUM:
+			menu->is_selected = DESELECTED;
+			duty_cycles[0] = duty_cycles[1] = 90;
+			duty_cycles[2] = duty_cycles[3] = 90;
+			break;
+		default:
+			break;
+	}
+}
+
+void hours_decrease(void) {
+	items[HOURS_MINUTES].numbers[0] = items[HOURS_MINUTES].numbers[0] > 0 ? items[HOURS_MINUTES].numbers[0] - 1 : 23;
+	DS3231_SetHour((uint8_t)items[HOURS_MINUTES].numbers[0]);
+}
+void hours_increase(void) {
+	items[HOURS_MINUTES].numbers[0] = items[HOURS_MINUTES].numbers[0] < 23 ? items[HOURS_MINUTES].numbers[0] + 1 : 0;
+	DS3231_SetHour((uint8_t)items[HOURS_MINUTES].numbers[0]);
+}
+void minutes_decrease(void) {
+	items[HOURS_MINUTES].numbers[1] = items[HOURS_MINUTES].numbers[1] > 0 ? items[HOURS_MINUTES].numbers[1] - 1 : 59;
+	DS3231_SetMinute((uint8_t)items[HOURS_MINUTES].numbers[1]);
+}
+void minutes_increase(void) {
+	items[HOURS_MINUTES].numbers[1] = items[HOURS_MINUTES].numbers[1] < 59 ? items[HOURS_MINUTES].numbers[1] + 1 : 0;
+	DS3231_SetMinute((uint8_t)items[HOURS_MINUTES].numbers[1]);
 }
 
 void init_menu_functions(void) {
-//	for(int item = 0; item < number_of_items; ++item) {
-//		for(int mask = 0; mask < NUM_OF_BTN_COMBINATIONS; ++mask) {
-//			for(int press = 0; press < NUM_OF_PRESS_TYPES; ++press) {
-//				menu[item][mask][press] = NULL;
-//			}
-//		}
-//
-////		menu[item][MASK_LEFT]	[CLICK][SELECTED] = decrease_parameter; // Goes to a previous item when "is_selected == 0" and decreases parameter
-////		menu[item][MASK_RIGHT]	[CLICK] = increase_parameter;
-////		menu[item][MASK_ENTER]	[CLICK] = toggle_item_selection;
-////		menu[item][MASK_ENTER]	[HOLD] 	= confirm_parameter_value;
-//	}
+	for(int item = 0; item < NUM_OF_ITEMS; ++item) {
+		for(int mask = 0; mask < NUM_OF_BTN_COMBINATIONS; ++mask) {
+			for(int press = 0; press < NUM_OF_PRESS_TYPES; ++press) {
+				for(int selection = 0; selection < NUM_OF_SELECTIONS; ++selection) {
+					logic[item][mask][press][selection] 	= NULL;
+				}
+			}
+		}
 
-	/*
-	 *
-	YEAR,
-	MONTH,
-	DAY,
-//	WEEKDAY,
-	HOURS,
-	MINUTES,
-	SECONDS,
-	TUBES_BRIGHTNESS_ADJUST,
-	AMBIENT_LIGHT_SENSOR,
-	TEMPERATURE_SENSOR,
-	BLUETOOTH,
-	 *
-	 *
-	 *
-	 */
-//	menu[YEAR][MASK_LEFT]
+		logic[item][MASK_LEFT]	[CLICK][DESELECTED] = item_goto_prev; // Goes to a previous item when "is_selected == 0" and decreases parameter
+		logic[item][MASK_RIGHT]	[CLICK][DESELECTED] = item_goto_next; // Goes to a previous item when "is_selected == 0" and decreases parameter
+//		logic[item][MASK_RIGHT]	[CLICK] = increase_parameter;
+		logic[item][MASK_ENTER]	[CLICK][DESELECTED] = item_selection_cycle;
+		logic[item][MASK_ENTER]	[CLICK][SELECTED_FIRST_NUM] = item_selection_cycle;
+		logic[item][MASK_ENTER]	[CLICK][SELECTED_SECOND_NUM] = item_selection_cycle;
+//		logic[item][MASK_ENTER]	[HOLD] 	= confirm_parameter_value;
+	}
+
+	logic[HOURS_MINUTES][MASK_LEFT]	[CLICK][SELECTED_FIRST_NUM] = hours_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
+	logic[HOURS_MINUTES][MASK_RIGHT][CLICK][SELECTED_FIRST_NUM] = hours_increase;
+	logic[HOURS_MINUTES][MASK_LEFT]	[CLICK][SELECTED_SECOND_NUM] = minutes_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
+	logic[HOURS_MINUTES][MASK_RIGHT][CLICK][SELECTED_SECOND_NUM] = minutes_increase;
 }
+
+//void item_displayed_numbers_update(void) {
+//	switch(menu->current_item) {
+//	case FW_VERSION: break;
+//	case COMPILE_DATE: break;
+//	case YEAR: break;
+//	case DAY_MONTH: break;
+//	case HOURS_MINUTES: break;
+//	case MINUTES_SECONDS: break;
+//	case BRIGHTNESS_ADJUST: break;
+//	case AMBIENT_LIGHT_SENSOR_EN: break;
+//	case TEMPERATURE_SENSOR_EN: break;
+//	case FACTORY_RESET: break;
+//
+//	default: break;
+//	}
+//
+//
+//}

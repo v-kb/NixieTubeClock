@@ -27,6 +27,7 @@ struct {
 
 uint8_t flag_upd_tubes;
 uint8_t flag_upd_time;
+uint8_t flag_upd_dots;
 //#define COMPILATION_TIME
 //
 //char compile_time[]	= __TIME__;
@@ -35,6 +36,7 @@ uint8_t flag_upd_time;
 //
 //};
 ClockData_HandleTypeDef clock_data;
+
 
 const uint16_t digit_bitmask[NUM_OF_DIGITS] = {
 	0b0000000001,	// 0
@@ -133,10 +135,15 @@ void bitmask_set(void) {
 	memset(clock_data.is_digit_on, 0, sizeof(bool)*NUM_OF_TUBES*NUM_OF_DIGITS);
 	clock_data.bitmask.fused = 0;
 
-	clock_data.is_digit_on[0][GET_MOST_SIGNIFICANT_DIGIT(rtc_time.Hours)] 		= true;
-	clock_data.is_digit_on[1][GET_LEAST_SIGNIFICANT_DIGIT(rtc_time.Hours)] 		= true;
-	clock_data.is_digit_on[2][GET_MOST_SIGNIFICANT_DIGIT(rtc_time.Seconds)] 	= true;
-	clock_data.is_digit_on[3][GET_LEAST_SIGNIFICANT_DIGIT(rtc_time.Seconds)] 	= true;
+//	digit[4] = {
+//			*clock_data.first_number,
+//			*clock_data.first_number,
+//	};
+
+	clock_data.is_digit_on[0][GET_MOST_SIGNIFICANT_DIGIT(*clock_data.first_number)] 	= true;
+	clock_data.is_digit_on[1][GET_LEAST_SIGNIFICANT_DIGIT(*clock_data.first_number)] 	= true;
+	clock_data.is_digit_on[2][GET_MOST_SIGNIFICANT_DIGIT(*clock_data.second_number)] 	= true;
+	clock_data.is_digit_on[3][GET_LEAST_SIGNIFICANT_DIGIT(*clock_data.second_number)] 	= true;
 
 	for (int t = 0; t < NUM_OF_TUBES; ++t) {
 		for (int d = 0; d < NUM_OF_DIGITS; ++d) {
@@ -170,4 +177,9 @@ void IN12_init(void) {
 
 	time_update();
 	date_update();
+}
+
+void tubes_data_source_set(uint16_t* first_number_src, uint16_t* second_number_src) {
+	clock_data.first_number = first_number_src;
+	clock_data.second_number = second_number_src;
 }
