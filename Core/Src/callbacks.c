@@ -21,7 +21,7 @@ void btns_callback(uint16_t mask, PressType_TypeDef press_type) {
 }
 
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
-	static uint8_t count_50_ms = 0;
+	static uint32_t count_50_ms = 0;
 	if(htim == &htim2) {
 		bitmask_set(); // restore values
 		if(!flag_upd_tubes)
@@ -35,7 +35,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 			flag_upd_dots = 1;
 			count_50_ms = 0;
 		}
-		if (count_50_ms % 10 == 0) {
+		if (count_50_ms % 1000 == 0) {
 		}
 		btns_check(&hbtns);
 	}

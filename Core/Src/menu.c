@@ -39,6 +39,8 @@ Item_TypeDef* 			items;
 
 uint8_t duty_cycles[4] = {90, 90, 90, 90};
 
+uint8_t day_max = 0;
+
 void (*logic[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
 
 static void decrease_parameter(void) {
@@ -175,12 +177,19 @@ void item_goto_next(void) {
 	menu->current_item = items[menu->current_item].next;
 }
 void item_selection_cycle(void) {
-	menu->is_selected = menu->is_selected < NUM_OF_SELECTIONS-1 ? menu->is_selected + 1 : 0;
+//	menu->is_selected = menu->is_selected < NUM_OF_SELECTIONS-1 ? menu->is_selected + 1 : 0;
 	switch (menu->is_selected) {
 		case DESELECTED:
-			menu->is_selected = SELECTED_FIRST_NUM;
-			duty_cycles[0] = duty_cycles[1] = 90;
-			duty_cycles[2] = duty_cycles[3] = 30;
+			if(menu->current_item == YEAR) {
+				menu->is_selected = SELECTED_SECOND_NUM;
+				duty_cycles[0] = duty_cycles[1] = 30;
+				duty_cycles[2] = duty_cycles[3] = 90;
+				break;
+			} else {
+				menu->is_selected = SELECTED_FIRST_NUM;
+				duty_cycles[0] = duty_cycles[1] = 90;
+				duty_cycles[2] = duty_cycles[3] = 30;
+			}
 			break;
 		case SELECTED_FIRST_NUM:
 			menu->is_selected = SELECTED_SECOND_NUM;
@@ -197,6 +206,52 @@ void item_selection_cycle(void) {
 	}
 }
 
+void year_decrease(void) {
+	items[YEAR].numbers[1] = items[YEAR].numbers[1] > 0 ? items[YEAR].numbers[1] - 1 : 99;
+	DS3231_SetYear(2000 + (uint8_t)items[YEAR].numbers[1]);
+}
+void year_increase(void) {
+	items[YEAR].numbers[1] = items[YEAR].numbers[1] < 99 ? items[YEAR].numbers[1] + 1 : 0;
+	DS3231_SetYear(2000 + (uint8_t)items[YEAR].numbers[1]);
+}
+
+static uint8_t check_max_date() {
+
+	uint8_t year = DS3231_GetYear();
+	/*
+	 * Calc maximum date for a month
+	 */
+	if(DS3231_GetMonth()%2 == 0) {
+		if(DS3231_GetMonth() == 2) {	// If February
+			day_max = (year%4 == 0) && (year%100 != 0) ? 29 : 28; // Check for leap year
+		} else {
+			day_max = 30;
+		}
+	} else {
+		day_max = 31;
+	}
+}
+
+void month_decrease(void) {
+	items[DAY_MONTH].numbers[1] = items[DAY_MONTH].numbers[1] > 1 ? items[DAY_MONTH].numbers[1] - 1 : 12;
+	DS3231_SetMonth((uint8_t)items[DAY_MONTH].numbers[1]);
+}
+void month_increase(void) {
+	items[DAY_MONTH].numbers[1] = items[DAY_MONTH].numbers[1] < 11 ? items[DAY_MONTH].numbers[1] + 1 : 1;
+	DS3231_SetMonth((uint8_t)items[DAY_MONTH].numbers[1]);
+}
+
+void days_decrease(void) {
+	check_max_date();
+	items[DAY_MONTH].numbers[0] = items[DAY_MONTH].numbers[0] > 1 ? items[DAY_MONTH].numbers[0] - 1 : day_max;
+	DS3231_SetDate((uint8_t)items[DAY_MONTH].numbers[0]);
+}
+void days_increase(void) {
+	check_max_date();
+	items[DAY_MONTH].numbers[0] = items[DAY_MONTH].numbers[0] < day_max ? items[DAY_MONTH].numbers[0] + 1 : 1;
+	DS3231_SetDate((uint8_t)items[DAY_MONTH].numbers[0]);
+}
+
 void hours_decrease(void) {
 	items[HOURS_MINUTES].numbers[0] = items[HOURS_MINUTES].numbers[0] > 0 ? items[HOURS_MINUTES].numbers[0] - 1 : 23;
 	DS3231_SetHour((uint8_t)items[HOURS_MINUTES].numbers[0]);
@@ -208,10 +263,38 @@ void hours_increase(void) {
 void minutes_decrease(void) {
 	items[HOURS_MINUTES].numbers[1] = items[HOURS_MINUTES].numbers[1] > 0 ? items[HOURS_MINUTES].numbers[1] - 1 : 59;
 	DS3231_SetMinute((uint8_t)items[HOURS_MINUTES].numbers[1]);
+	DS3231_SetSecond(0);
 }
 void minutes_increase(void) {
 	items[HOURS_MINUTES].numbers[1] = items[HOURS_MINUTES].numbers[1] < 59 ? items[HOURS_MINUTES].numbers[1] + 1 : 0;
 	DS3231_SetMinute((uint8_t)items[HOURS_MINUTES].numbers[1]);
+	DS3231_SetSecond(0);
+}
+
+static void numbers_show(void) {
+	HAL_GPIO_WritePin(SHDN_170V_3V3_GPIO_Port, SHDN_170V_3V3_Pin, GPIO_PIN_RESET);
+}
+
+static void numbers_hide(void) {
+	HAL_GPIO_WritePin(SHDN_170V_3V3_GPIO_Port, SHDN_170V_3V3_Pin, GPIO_PIN_SET);
+}
+
+static void numbers_on_off(void) {
+	static int status = 0;
+
+	if(status == 0) {
+		status = 1;
+		numbers_show();
+	} else {
+		status = 0;
+		numbers_hide();
+	}
+
+//	TOGGLE_170V();
+}
+
+static menu_toggle(void) {
+
 }
 
 void init_menu_functions(void) {
@@ -223,15 +306,23 @@ void init_menu_functions(void) {
 				}
 			}
 		}
+		logic[item][MASK_ENTER]	[CLICK][DESELECTED] = numbers_on_off; //item_selection_cycle;
+		logic[item][MASK_ENTER]	[HOLD][DESELECTED] = item_selection_cycle;
 
 		logic[item][MASK_LEFT]	[CLICK][DESELECTED] = item_goto_prev; // Goes to a previous item when "is_selected == 0" and decreases parameter
 		logic[item][MASK_RIGHT]	[CLICK][DESELECTED] = item_goto_next; // Goes to a previous item when "is_selected == 0" and decreases parameter
-//		logic[item][MASK_RIGHT]	[CLICK] = increase_parameter;
-		logic[item][MASK_ENTER]	[CLICK][DESELECTED] = item_selection_cycle;
 		logic[item][MASK_ENTER]	[CLICK][SELECTED_FIRST_NUM] = item_selection_cycle;
 		logic[item][MASK_ENTER]	[CLICK][SELECTED_SECOND_NUM] = item_selection_cycle;
 //		logic[item][MASK_ENTER]	[HOLD] 	= confirm_parameter_value;
 	}
+
+	logic[YEAR][MASK_LEFT]	[CLICK][SELECTED_SECOND_NUM] = year_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
+	logic[YEAR][MASK_RIGHT][CLICK][SELECTED_SECOND_NUM] = year_increase;
+
+	logic[DAY_MONTH][MASK_LEFT]	[CLICK][SELECTED_FIRST_NUM] = days_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
+	logic[DAY_MONTH][MASK_RIGHT][CLICK][SELECTED_FIRST_NUM] = days_increase;
+	logic[DAY_MONTH][MASK_LEFT]	[CLICK][SELECTED_SECOND_NUM] = month_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
+	logic[DAY_MONTH][MASK_RIGHT][CLICK][SELECTED_SECOND_NUM] = month_increase;
 
 	logic[HOURS_MINUTES][MASK_LEFT]	[CLICK][SELECTED_FIRST_NUM] = hours_decrease; // Goes to a previous item when "is_selected == 0" and decreases parameter
 	logic[HOURS_MINUTES][MASK_RIGHT][CLICK][SELECTED_FIRST_NUM] = hours_increase;

@@ -80,7 +80,7 @@ static HAL_StatusTypeDef btns_timer_start(Buttons_HandleTypeDef *hbtns) {
 }
 
 void btns_check(Buttons_HandleTypeDef *hbtns) {
-	uint8_t cnt = 0;
+	static uint8_t cnt = 0;
 	/*
 	 * Get buttons' masks and current state
 	 */

@@ -25,6 +25,7 @@
 #include "menu.h"
 #include "buttons.h"
 #include "settings.h"
+#include "temperature_sensor.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,39 +63,48 @@ extern RTC_TimeTypeDef rtc_time;
 
 Menu_HandleTypeDef 		hmenu;
 Buttons_HandleTypeDef 	hbtns;
-
+volatile float t = 0;
 Button_InitTypeDef btns_list[] = {
 		{"Left", 	BTN_1_GPIO_Port, BTN_1_Pin, GPIO_PIN_RESET},
 		{"Enter", 	BTN_2_GPIO_Port, BTN_2_Pin, GPIO_PIN_RESET},
 		{"Right", 	BTN_3_GPIO_Port, BTN_3_Pin, GPIO_PIN_RESET},
 };
-Item_TypeDef items_list[] = {
-		{.menu = NO_MENU, 	.s_ptr = NULL, .numbers = {0, 0}}, // "NO_ITEM",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {0, 5}}, // "FW VERSION",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {22, 05}}, // "COMPILE DATE",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {20, 25}}, // "YEAR",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {17, 01}}, // "DAY_MONTH",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {22, 8}}, // "HOURS_MINUTES",
-		{.menu = MAIN, 		.s_ptr = NULL, .numbers = {8, 30}}, // "MINUTES_SECONDS",
-		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {1, 3}}, // "TUBES BRIGHTNESS ADJUST",
-		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {2, 4}}, // "AMBIENT LIGHT SENSOR",
-		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {3, 5}}, // "TEMPERATURE SENSOR",
-		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {4, 6}}, // "BLUETOOTH",
-};
 Setting_TypeDef s_ptr[] = {
 		// Name				Current value	  Default	Delta	  Min		Max				Need to save		  Cyclic change
-		{"FW_VERSION",				.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
-		{"COMPILE_DATE",			.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
-		{"YEAR",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 2077, 	.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"MONTH",					.val = 0, .def = 0, .del = 1, .min = 1, . max = 12,		.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"DAY",						.val = 0, .def = 0, .del = 1, .min = 1, . max = 31,		.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"HOURS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 23,		.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"MINUTES",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"SECONDS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
-		{"TUBES_BRIGHTNESS_ADJUST",	.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 0},
+//		{"FW_VERSION",				.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
+//		{"COMPILE_DATE",			.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 0, .is_change_cyclic = 0},
+//		{"YEAR",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 2077, 	.is_need_to_save = 0, .is_change_cyclic = 1},
+//		{"MONTH",					.val = 0, .def = 0, .del = 1, .min = 1, . max = 12,		.is_need_to_save = 0, .is_change_cyclic = 1},
+//		{"DAY",						.val = 0, .def = 0, .del = 1, .min = 1, . max = 31,		.is_need_to_save = 0, .is_change_cyclic = 1},
+//		{"HOURS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 23,		.is_need_to_save = 0, .is_change_cyclic = 1},
+//		{"MINUTES",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
+//		{"SECONDS",					.val = 0, .def = 0, .del = 1, .min = 0, . max = 59,		.is_need_to_save = 0, .is_change_cyclic = 1},
+		{"BRIGHTNESS",				.val = 0, .def = 0, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 0},
 		{"AMBIENT_LIGHT_SENSOR",	.val = 0, .def = 1, .del = 1, .min = 0, . max = 1, 		.is_need_to_save = 1, .is_change_cyclic = 1},
 		{"TEMPERATURE_SENSOR",		.val = 0, .def = 1, .del = 1, .min = 0, . max = 1, 		.is_need_to_save = 1, .is_change_cyclic = 1},
-		{"BLUETOOTH",				.val = 0, .def = 1, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 1},
+//		{"BLUETOOTH",				.val = 0, .def = 1, .del = 0, .min = 0, . max = 0, 		.is_need_to_save = 1, .is_change_cyclic = 1},
+};
+
+//const Item_TypeDef item_temperature 			= {.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {0, 0}};
+//const Item_TypeDef item_brightness 			= {.menu = SETTINGS, 	.s_ptr = &s_ptr[0], 	.numbers = {1, 3}};
+//const Item_TypeDef item_ambient_light_sensor 	= {.menu = SETTINGS, 	.s_ptr = &s_ptr[1], 	.numbers = {2, 4}};
+//const Item_TypeDef item_temperature_sensor 	= {.menu = SETTINGS, 	.s_ptr = &s_ptr[2], 	.numbers = {3, 5}};
+Item_TypeDef items_list[] = {
+		{.menu = NO_MENU, 	.s_ptr = NULL, 			.numbers = {0, 0}}, 	// "NO_ITEM",
+//		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {0, 5}}, 	// "FW VERSION",
+//		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {22, 05}}, 	// "COMPILE DATE",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {20, 25}}, 	// "YEAR",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {31, 01}}, 	// "DAY_MONTH",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {22, 8}}, 	// "HOURS_MINUTES",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {8, 30}}, 	// "MINUTES_SECONDS",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {25, 3}},		// Temperature
+		{.menu = SETTINGS, 	.s_ptr = &s_ptr[0], 	.numbers = {1, 3}},
+		{.menu = SETTINGS, 	.s_ptr = &s_ptr[1], 	.numbers = {2, 4}},
+		{.menu = SETTINGS, 	.s_ptr = &s_ptr[2], 	.numbers = {3, 5}},
+//		item_brightness, // "TUBES BRIGHTNESS ADJUST",
+//		item_ambient_light_sensor, // "AMBIENT LIGHT SENSOR",
+//		item_temperature_sensor, // "TEMPERATURE SENSOR",
+//		{.menu = SETTINGS, 	.s_ptr = NULL, .numbers = {4, 6}}, // "BLUETOOTH",
 };
 uint16_t settings_size = sizeof(s_ptr)/sizeof(s_ptr[0]);
 uint8_t num_of_btns = sizeof(btns_list)/sizeof(btns_list[0]);
@@ -163,43 +173,38 @@ int main(void)
   MX_TIM21_Init();
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
-//  settings_init(s_ptr, settings_size);
+  settings_init(s_ptr, settings_size);
   IN12_init();
   DS3231_Init(&hi2c1);
-
   init_menu_items(&hmenu, items_list, NUM_OF_MENUS, NUM_OF_ITEMS);
   btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
-
-//  FIX_TIMER_TRIGGER(&htim22);
-//  volatile sts = HAL_TIM_Base_Start_IT(&htim22);
-//  sts = 0;
+  Tmp75_Init(&hi2c1);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   // 7-15 Volts input
-//  uint8_t dir = 0;
-//  uint8_t is_upd = 0;
-//  uint32_t period = 100;
-//  uint8_t duty_cycle = 1;
-
-
-
 
   // No need to fix interrupt being called right after the starting timer
   // Here it serve the purpose of updating important variables and setting bits in control registers
-
-//  status = HAL_TIM_PWM_Start_IT(&htim2, TIM_CHANNEL_1);
-
   while (1)
   {
 	  // must update when digits are active
 	  if(flag_upd_time) {
 		  time_update();
+		  items_list[YEAR].numbers[0] = 20;
+		  items_list[YEAR].numbers[1] = DS3231_GetYear() - 2000;
+		  items_list[DAY_MONTH].numbers[0] = DS3231_GetDate();
+		  items_list[DAY_MONTH].numbers[1] = DS3231_GetMonth();
 		  items_list[HOURS_MINUTES].numbers[0] = DS3231_GetHour();
 		  items_list[HOURS_MINUTES].numbers[1] = DS3231_GetMinute();
 		  items_list[MINUTES_SECONDS].numbers[0] = items_list[HOURS_MINUTES].numbers[1];
 		  items_list[MINUTES_SECONDS].numbers[1] = DS3231_GetSecond();
+
+		  Read_TempCelsius(&t);
+		  items_list[TEMPERATURE].numbers[0] = t;
+		  items_list[TEMPERATURE].numbers[1] = ((int)(t*100))%100;
+
 		  flag_upd_time = 0;
 	  }
 
@@ -213,34 +218,7 @@ int main(void)
 		  HAL_GPIO_TogglePin(INS_EN_3V3_GPIO_Port, INS_EN_3V3_Pin);
 	  }
 
-//	  switch(shared_mask) {
-//	  case MASK_LEFT:
-//		  is_upd = 1;
-//		  if(duty_cycles[0] > 10)
-//			  duty_cycles[0] -= 10;
-//		  break;
-//
-//	  case MASK_RIGHT:
-//		  is_upd = 1;
-//		  if(duty_cycles[0] < period - 10)
-//			  duty_cycles[0] += 10;
-//
-//		  break;
-//
-//	  case MASK_ENTER:
-////		  dir = ~dir;
-//		  break;
-//
-//	  default: is_upd = 0;
-//	  }
-//
-//	  if(is_upd) {
-////		  rtc_time.Seconds = 0;
-////		  DS3231_EnableOscillator(DS3231_DISABLED);
-////		  DS3231_SetFullTime(rtc_time.Hours, rtc_time.Minutes, rtc_time.Seconds);
-////		  DS3231_EnableOscillator(DS3231_ENABLED);
-//		  shared_mask = 0;
-//	  }
+//	  if(hmenu.current_item == )
 
 	  if(logic[hmenu.current_item][shared_mask][shared_press_type][hmenu.is_selected] != NULL) {
 		  (*logic[hmenu.current_item][shared_mask][shared_press_type][hmenu.is_selected])();
@@ -248,8 +226,6 @@ int main(void)
 		  shared_mask = 0;
 		  shared_press_type = 0;
 	  }
-
-
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

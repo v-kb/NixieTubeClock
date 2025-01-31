@@ -14,6 +14,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+
+#define TOGGLE_170V()							HAL_GPIO_TogglePin(SHDN_170V_3V3_GPIO_Port, SHDN_170V_3V3_Pin)
 #define OUTPUT_DISABLE()						HAL_GPIO_WritePin(OE_3V3_GPIO_Port, OE_3V3_Pin, GPIO_PIN_SET)
 #define NUM_OF_DIGITS 							10
 #define NUM_OF_TUBES 							4

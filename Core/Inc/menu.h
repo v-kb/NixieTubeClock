@@ -51,6 +51,7 @@ typedef struct Item {
 	ItemType 				prev;
 	ItemType 				next;
 	uint16_t				numbers[2];
+	uint16_t*				numbers_ptrs[2];
 	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
 } Item_TypeDef;
 
