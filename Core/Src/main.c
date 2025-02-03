@@ -26,6 +26,7 @@
 #include "buttons.h"
 #include "settings.h"
 #include "temperature_sensor.h"
+#include "opt3001.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -95,7 +96,7 @@ Item_TypeDef items_list[] = {
 //		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {22, 05}}, 	// "COMPILE DATE",
 		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {20, 25}}, 	// "YEAR",
 		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {31, 01}}, 	// "DAY_MONTH",
-		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {22, 8}}, 	// "HOURS_MINUTES",
+		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {99, 99}}, 	// "HOURS_MINUTES",
 		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {8, 30}}, 	// "MINUTES_SECONDS",
 		{.menu = MAIN, 		.s_ptr = NULL, 			.numbers = {25, 3}},		// Temperature
 		{.menu = SETTINGS, 	.s_ptr = &s_ptr[0], 	.numbers = {1, 3}},
@@ -179,6 +180,7 @@ int main(void)
   init_menu_items(&hmenu, items_list, NUM_OF_MENUS, NUM_OF_ITEMS);
   btns_init(&hbtns, btns_list, num_of_btns, &htim21, PRESSED);
   Tmp75_Init(&hi2c1);
+  opt3001_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
