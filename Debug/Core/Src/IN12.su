@@ -1,5 +1,5 @@
-../Core/Src/IN12.c:103:6:IN12_set	32	static
-../Core/Src/IN12.c:134:6:bitmask_set	24	static
+../Core/Src/IN12.c:103:6:IN12_set	24	static
+../Core/Src/IN12.c:134:6:bitmask_set	32	static
 ../Core/Src/IN12.c:155:6:time_update	8	static
 ../Core/Src/IN12.c:171:6:IN12_init	8	static
 ../Core/Src/IN12.c:182:6:tubes_data_source_set	0	static

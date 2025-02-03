@@ -7,7 +7,7 @@
 ../DS3231/ds3231_for_stm32_hal.c:87:6:DS3231_EnableAlarm2	8	static
 ../DS3231/ds3231_for_stm32_hal.c:96:6:DS3231_ClearAlarm2Flag	8	static
 ../DS3231/ds3231_for_stm32_hal.c:145:6:DS3231_SetAlarm2Mode	16	static
-../DS3231/ds3231_for_stm32_hal.c:159:6:DS3231_EnableAlarm1	8	static
+../DS3231/ds3231_for_stm32_hal.c:159:6:DS3231_EnableAlarm1	16	static
 ../DS3231/ds3231_for_stm32_hal.c:168:6:DS3231_ClearAlarm1Flag	8	static
 ../DS3231/ds3231_for_stm32_hal.c:16:6:DS3231_Init	8	static
 ../DS3231/ds3231_for_stm32_hal.c:227:6:DS3231_SetAlarm1Mode	16	static

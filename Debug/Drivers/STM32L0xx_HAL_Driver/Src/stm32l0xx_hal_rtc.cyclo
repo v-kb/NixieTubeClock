@@ -13,9 +13,9 @@
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1809:21:HAL_RTC_GetState	1
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1835:19:RTC_EnterInitMode	5
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1870:19:RTC_ExitInitMode	3
-../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:249:19:HAL_RTC_Init	6
+../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:249:19:HAL_RTC_Init	7
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:367:19:HAL_RTC_DeInit	3
-../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1896:9:RTC_ByteToBcd2	3
+../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1896:9:RTC_ByteToBcd2	2
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:720:19:HAL_RTC_SetTime	7
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:879:19:HAL_RTC_SetDate	6
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal_rtc.c:1026:19:HAL_RTC_SetAlarm	10

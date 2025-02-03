@@ -5,13 +5,13 @@
 ../Core/Src/menu.c:213:6:year_increase	8	static
 ../Core/Src/menu.c:235:6:month_decrease	8	static
 ../Core/Src/menu.c:239:6:month_increase	8	static
-../Core/Src/menu.c:218:16:check_max_date	8	static
-../Core/Src/menu.c:244:6:days_decrease	8	static
-../Core/Src/menu.c:249:6:days_increase	8	static
 ../Core/Src/menu.c:255:6:hours_decrease	8	static
 ../Core/Src/menu.c:259:6:hours_increase	8	static
 ../Core/Src/menu.c:263:6:minutes_decrease	8	static
 ../Core/Src/menu.c:268:6:minutes_increase	8	static
 ../Core/Src/menu.c:282:13:numbers_on_off	8	static
+../Core/Src/menu.c:218:16:check_max_date.isra	8	static
+../Core/Src/menu.c:249:6:days_increase	8	static
+../Core/Src/menu.c:244:6:days_decrease	8	static
 ../Core/Src/menu.c:300:6:init_menu_functions	20	static
-../Core/Src/menu.c:143:6:init_menu_items	32	static
+../Core/Src/menu.c:143:6:init_menu_items	40	static

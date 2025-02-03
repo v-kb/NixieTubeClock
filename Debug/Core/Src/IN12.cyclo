@@ -1,4 +1,4 @@
-../Core/Src/IN12.c:103:6:IN12_set	3
+../Core/Src/IN12.c:103:6:IN12_set	2
 ../Core/Src/IN12.c:134:6:bitmask_set	3
 ../Core/Src/IN12.c:155:6:time_update	1
 ../Core/Src/IN12.c:171:6:IN12_init	2

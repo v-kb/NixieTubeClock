@@ -24,13 +24,6 @@
  * 				- Tubes life extension algorithm
  */
 
-/*
- * menu [item 1, item 2,	item 3, item 4 ...]
- * 	|				|		  	|	 	|
- * 	|			menu2 [...]		|		|
- * 	|							menu3 [...]
- * 	\--- menu4 [...]
- */
 
 extern TIM_HandleTypeDef htim2;
 

@@ -6,7 +6,7 @@
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:294:13:HAL_IncTick	0	static
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:305:17:HAL_GetTick	0	static
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:314:10:HAL_GetTickPrio	0	static
-../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:323:19:HAL_SetTickFreq	8	static
+../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:323:19:HAL_SetTickFreq	16	static
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:356:21:HAL_GetTickFreq	0	static
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:372:13:HAL_Delay	16	static
 ../Drivers/STM32L0xx_HAL_Driver/Src/stm32l0xx_hal.c:398:13:HAL_SuspendTick	0	static

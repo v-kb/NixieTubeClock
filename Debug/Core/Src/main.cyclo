@@ -1,3 +1,10 @@
-../Core/Src/main.c:241:6:SystemClock_Config	4
-../Core/Src/main.c:144:5:main	22
-../Core/Src/main.c:671:6:Error_Handler	1
+../Core/Src/main.c:149:13:update_flags	1
+../Core/Src/main.c:163:13:update_running_time	1
+../Core/Src/main.c:185:13:update_ntm_flags	1
+../Core/Src/main.c:166:13:update_battery	1
+../Core/Src/main.c:173:13:update_distance	1
+../Core/Src/main.c:176:13:update_temp_and_press	1
+../Core/Src/main.c:179:13:update_angles	1
+../Core/Src/main.c:344:6:SystemClock_Config	4
+../Core/Src/main.c:218:5:main	26
+../Core/Src/main.c:774:6:Error_Handler	1
