@@ -62,8 +62,8 @@ all: main-build
 main-build: NixieTubeClock.elf secondary-outputs
 
 # Tool invocations
-NixieTubeClock.elf NixieTubeClock.map: $(OBJS) $(USER_OBJS) I:\Documents\Work\Projects\NixieTubeClock\STM32L031K6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "NixieTubeClock.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"I:\Documents\Work\Projects\NixieTubeClock\STM32L031K6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NixieTubeClock.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+NixieTubeClock.elf NixieTubeClock.map: $(OBJS) $(USER_OBJS) /Users/v_/Documents/Work/Projects/NixieTubeClock/STM32L031K6TX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "NixieTubeClock.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m0plus -T"/Users/v_/Documents/Work/Projects/NixieTubeClock/STM32L031K6TX_FLASH.ld" --specs=nosys.specs -Wl,-Map="NixieTubeClock.map" -Wl,--gc-sections -static --specs=nano.specs -mfloat-abi=soft -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

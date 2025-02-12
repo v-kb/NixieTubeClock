@@ -1,5 +1,6 @@
-Core/Src/callbacks.o: ../Core/Src/callbacks.c ../Core/Inc/buttons.h \
- ../Core/Inc/main.h ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
+Core/Src/callbacks.o: ../Core/Src/callbacks.c ../Core/Inc/nixie_tubes.h \
+ ../DS3231/ds3231_for_stm32_hal.h ../Core/Inc/main.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h \
  ../Core/Inc/stm32l0xx_hal_conf.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rcc.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_def.h \
@@ -30,8 +31,9 @@ Core/Src/callbacks.o: ../Core/Src/callbacks.c ../Core/Inc/buttons.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
- ../Core/Inc/IN12.h ../DS3231/ds3231_for_stm32_hal.h ../Core/Inc/main.h
-../Core/Inc/buttons.h:
+ ../Core/Inc/buttons.h ../Core/Inc/main.h
+../Core/Inc/nixie_tubes.h:
+../DS3231/ds3231_for_stm32_hal.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
 ../Core/Inc/stm32l0xx_hal_conf.h:
@@ -64,6 +66,5 @@ Core/Src/callbacks.o: ../Core/Src/callbacks.c ../Core/Inc/buttons.h \
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h:
-../Core/Inc/IN12.h:
-../DS3231/ds3231_for_stm32_hal.h:
+../Core/Inc/buttons.h:
 ../Core/Inc/main.h:

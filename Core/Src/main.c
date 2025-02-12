@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "IN12.h"
+#include "nixie_tubes.h"
 #include "menu.h"
 #include "buttons.h"
 #include "settings.h"
@@ -120,7 +120,7 @@ uint8_t num_of_items = sizeof(items_list)/sizeof(items_list[0]);
 
 uint8_t always_update = 1;
 volatile uint8_t is_update_battery, is_update_distance, is_update_temp_and_press, is_update_hall, is_update_gui, is_update_ntm_flags, is_show_menu;
-volatile
+NixieClock hclock;
 
 typedef struct {
 	uint8_t* 	start_condition;	// Time to pass in ms to set flag to update
@@ -309,7 +309,7 @@ int main(void)
 		}
 
 		if(flag_upd_tubes) {
-			IN12_set();
+			IN12_set(&clock);
 			flag_upd_tubes = 0;
 		}
 

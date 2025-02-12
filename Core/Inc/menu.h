@@ -38,28 +38,26 @@
  * 2. Enter short - is to go one step down the menu tree and
  */
 
-//typedef struct {
-//
-//} Tree_TypeDef;
+typedef struct {
+	ItemType* parent;
+	ItemType* child;
+	ItemType* prev;
+	ItemType* next;
+} Hierarchy_TypeDef;
 
 typedef struct Item {
 //	const char*				name;
 	MenuType				menu;					// Menu, related to the Item
-	Setting_TypeDef* 		s_ptr;                  // Pointer to the related setting
-//	uint16_t 				parent;
-//	uint16_t 				child;
-	ItemType 				prev;
-	ItemType 				next;
-	uint16_t				numbers[2];
-	uint16_t*				numbers_ptrs[2];
-	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
+	int* 					data_src;                  // Pointer to the related setting
+	const char*				format;
+	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES])(void);
 } Item_TypeDef;
 
 typedef struct {
 	Item_TypeDef*			items;
-	ItemType   				current_item;				// Currently selected item
-//	uint16_t*   			current_item_ptr;				// Currently selected item
-	uint8_t					is_selected;			// Shows if current item selected to change it's value
+	ItemType*   			current_item;				// Currently selected item
+	ItemType*				next_item;			// Shows if current item selected to change it's value
+	SelectionType			selection;
 } Menu_HandleTypeDef;
 
 extern void (*logic[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);

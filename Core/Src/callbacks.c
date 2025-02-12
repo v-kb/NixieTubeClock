@@ -4,8 +4,8 @@
  *  Created on: Dec 26, 2024
  *      Author: v_
  */
+#include <nixie_tubes.h>
 #include "buttons.h"
-#include "IN12.h"
 
 
 extern TIM_HandleTypeDef 		htim2;
@@ -41,6 +41,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
 	}
 }
 
+/*
+ * After duty cycle elapsed we set data for shift registers to zero
+ */
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
 	if(htim == &htim2) {
 		switch (htim->Channel) {

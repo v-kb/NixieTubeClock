@@ -6,7 +6,11 @@
  */
 #include "menu.h"
 #include "ds3231_for_stm32_hal.h"
-#include "IN12.h"
+#include "nixie_tubes.h"
+
+/*
+ * There are 3 layers: Menu
+ */
 
 /*
  * Overall, menu structure should look like this.
@@ -25,12 +29,15 @@
  */
 
 
+
 extern TIM_HandleTypeDef htim2;
+
+
 
 Menu_HandleTypeDef* 	menu;
 Item_TypeDef* 			items;
 
-uint8_t duty_cycles[4] = {90, 90, 90, 90};
+//uint8_t duty_cycles[4] = {90, 90, 90, 90};
 
 uint8_t day_max = 0;
 
@@ -97,41 +104,52 @@ static inline void init_items_hierarchy_horizontal(void) {
 	}
 }
 
-//static inline void init_items_hierarchy_vertical(void) {
-//	for(int i = 0; i < num_of_items; ++i) {
-//		menu->items[i].parent 	= NO_ITEM;
-//		menu->items[i].child 	= NO_ITEM;
-//	}
-//
-//	menu->items[FW_VERSION].child = menu->items[COMPILE_DATE].child = FACTORY_RESET;
-//	menu->items[ITEM_SETTINGS_ENTER].child 		= ITEM_PROFILE;
-//	menu->items[ITEM_PROFILE].child 				= ITEM_SIGHTING_UNITS;
-//	menu->items[ITEM_SIGHTING].child 				= ITEM_MARK_TYPE;
-//	menu->items[ITEM_MARK_TYPE].child 				= s_ptr[MARK_TYPE].val == 0 ? ITEM_AMMO_TYPE : ITEM_GRID_X; // Need to monitor which mark type we have
-//	menu->items[ITEM_AMMO_TYPE].child 				= ITEM_MARK_X;
-//	menu->items[ITEM_BAD_PIXELS_FIX_ENTER].child 	= ITEM_BAD_PIXELS_FIX_AUTO;
-////
-////	item_parent[ITEM_ZOOM] 		        	= ITEM_MAIN_SCREEN;
-////	item_parent[ITEM_SIGHTING_UNITS] 		= ITEM_PROFILE;
-////	item_parent[ITEM_IDE] 					= ITEM_PROFILE;
-////	item_parent[ITEM_CALIBRATION] 			= ITEM_PROFILE;
-////	item_parent[ITEM_MARK_TYPE] 			= ITEM_SIGHTING;
-////	item_parent[ITEM_AMMO_TYPE] 			= ITEM_MARK_TYPE;
-////	item_parent[ITEM_MARK_X] 				= ITEM_AMMO_TYPE;
-////	item_parent[ITEM_MARK_Y] 				= ITEM_AMMO_TYPE;
-////	item_parent[ITEM_GRID_X] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_Y] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_2] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_3] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_4] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_5] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_6] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_7] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_8] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_GRID_9] 				= ITEM_MARK_TYPE;
-////	item_parent[ITEM_BAD_PIXELS_FIX_AUTO] 	= ITEM_BAD_PIXELS_FIX_ENTER;
-////	item_parent[ITEM_SETTINGS_EXIT] 		= ITEM_SETTINGS_ENTER;
-//}
+static inline void init_items_hierarchy_vertical(void) {
+	for(int i = 0; i < num_of_items; ++i) {
+		items[i].parent = NO_ITEM;
+		items[i].child 	= NO_ITEM;
+	}
+
+	items[YEAR].child 						= menu->items[COMPILE_DATE].child = FACTORY_RESET;
+	items[DAY_MONTH].child 					= ITEM_PROFILE;
+	items[HOURS_MINUTES].child 				= ITEM_SIGHTING_UNITS;
+	items[MINUTES_SECONDS].child 			= ITEM_MARK_TYPE;
+	items[TEMPERATURE].child 				= s_ptr[MARK_TYPE].val == 0 ? ITEM_AMMO_TYPE : ITEM_GRID_X; // Need to monitor which mark type we have
+	items[BRIGHTNESS_LEVEL].child 			= ITEM_MARK_X;
+	items[AMBIENT_LIGHT_SENSOR_EN].child 	= ITEM_BAD_PIXELS_FIX_AUTO;
+	items[TEMPERATURE_SENSOR_EN].child 		= ITEM_BAD_PIXELS_FIX_AUTO;
+
+	items[YEAR].parent 						= NO_ITEM;//nnot be any parents (levels above parent level)
+	items[DAY_MONTH].parent 				= NO_ITEM;
+	items[HOURS_MINUTES].parent 			= NO_ITEM;
+	items[MINUTES_SECONDS].parent 			= NO_ITEM;
+
+	items[TEMPERATURE].parent 				= NO_ITEM;
+	items[BRIGHTNESS_LEVEL].parent 			= NO_ITEM;
+	items[AMBIENT_LIGHT_SENSOR_EN].parent	= NO_ITEM;
+	items[TEMPERATURE_SENSOR_EN].parent		= NO_ITEM;
+
+
+
+
+/*
+ * menu:
+ * 		items list
+ * 		level
+ * 		entry point (item/s from parent menu)
+ *
+ */
+
+
+
+// чтобы описать иерархию вертикальную нам нужно всего указать одного ребенка,
+// а дальше все остальные дети с таким же уровнем меню найдуться
+
+// либо создавать отдельные меню сразу по группам - внутри группы все предметы равны по уровню
+// а группы связаны между собой уже по выбору (либо какие-то предметы изначально будут иметь свойство "проводника")
+
+
+}
 
 void init_menu_items(Menu_HandleTypeDef* user_menu, Item_TypeDef* user_items, uint16_t number_of_menus, uint16_t number_of_items) {
 	assert_param(user_hmenu == NULL);
