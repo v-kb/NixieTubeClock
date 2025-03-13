@@ -24,12 +24,20 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_i2c_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr_ex.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rtc.h \
- ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rtc_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_crs.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_rcc.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_bus.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_system.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_exti.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_cortex.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_utils.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_pwr.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_dma.h \
+ ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_gpio.h \
  ../Core/Inc/nixie_tubes.h ../DS3231/ds3231_for_stm32_hal.h \
  ../Core/Inc/menu.h ../Core/Inc/main.h ../Core/Inc/buttons.h \
  ../libSettings/settings.h ../Core/Inc/buttons.h \
@@ -60,12 +68,20 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_i2c_ex.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_pwr_ex.h:
-../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rtc.h:
-../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_rtc_ex.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_crs.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_rcc.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_bus.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_system.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_exti.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_cortex.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_utils.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_pwr.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_dma.h:
+../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_ll_gpio.h:
 ../Core/Inc/nixie_tubes.h:
 ../DS3231/ds3231_for_stm32_hal.h:
 ../Core/Inc/menu.h:
