@@ -28,6 +28,16 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l0xx_hal.h"
+#include "stm32l0xx_ll_crs.h"
+#include "stm32l0xx_ll_rcc.h"
+#include "stm32l0xx_ll_bus.h"
+#include "stm32l0xx_ll_system.h"
+#include "stm32l0xx_ll_exti.h"
+#include "stm32l0xx_ll_cortex.h"
+#include "stm32l0xx_ll_utils.h"
+#include "stm32l0xx_ll_pwr.h"
+#include "stm32l0xx_ll_dma.h"
+#include "stm32l0xx_ll_gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -96,49 +106,8 @@ void Error_Handler(void);
 #define MASK_LEFT					1
 #define MASK_ENTER					2
 #define MASK_RIGHT					4
-#define NUM_OF_BTN_COMBINATIONS		((MASK_LEFT|MASK_RIGHT|MASK_ENTER) + 1)
+#define NUM_BTN_COMBINATIONS		((MASK_LEFT|MASK_RIGHT|MASK_ENTER) + 1)
 
-typedef enum {
-	DESELECTED,
-	SELECTED_FIRST_NUM,
-	SELECTED_SECOND_NUM,
-
-	NUM_OF_SELECTIONS
-} SelectionType;
-
-typedef enum {
-	NO_MENU,
-//	BOOT,
-	MAIN,
-	SETTINGS,
-
-//	*BLUETOOTH // - Includes name of the device, connection, reset, etc.
-
-	NUM_OF_MENUS
-} MenuType;
-
-typedef enum {
-	NO_ITEM,
-
-//	FW_VERSION,
-//	COMPILE_DATE,
-//
-	YEAR,
-	DAY_MONTH,
-	HOURS_MINUTES,
-	MINUTES_SECONDS,
-	TEMPERATURE,
-
-	BRIGHTNESS_LEVEL,
-	AMBIENT_LIGHT_SENSOR_EN,
-	TEMPERATURE_SENSOR_EN,
-
-//	FACTORY_RESET,
-
-//	BLUETOOTH,
-
-	NUM_OF_ITEMS
-} ItemType;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

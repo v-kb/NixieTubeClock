@@ -38,33 +38,80 @@
  * 2. Enter short - is to go one step down the menu tree and
  */
 
-typedef struct {
-	ItemType* parent;
-	ItemType* child;
-	ItemType* prev;
-	ItemType* next;
-} Hierarchy_TypeDef;
+typedef enum {
+	STATE_DEFAULT,
+
+	STATE_BOOT,
+	STATE_OFF,
+	STATE_ON,
+	STATE_DISPLAY,
+	STATE_SELECT,
+	STATE_ADJUST,
+	STATE_ANIMATE,
+
+	NUM_STATES
+} StateType;
+
+
+typedef enum {
+	ITEM_DEFAULT,
+
+	ITEM_DISP_YEAR,
+	ITEM_DISP_DAY_MONTH,
+	ITEM_DISP_HOURS_MINUTES,
+	ITEM_DISP_MINUTES_SECONDS,
+	ITEM_DISP_TEMPERATURE,
+
+	ITEM_SETTING_DATE_TIME,
+	ITEM_SETTING_BRIGHTNESS,
+	ITEM_SETTING_AMB_LIGHT_SENS_EN,
+	ITEM_SETTING_TEMP_SENS_EN,
+
+	ITEM_ADJUST_YEAR,
+	ITEM_ADJUST_MONTH,
+	ITEM_ADJUST_DATE,
+	ITEM_ADJUST_HOUR,
+	ITEM_ADJUST_MINUTE,
+	ITEM_ADJUST_BRIGHTNESS,
+	ITEM_ADJUST_AMB_LIGHT_SENS_EN,
+	ITEM_ADJUST_TEMP_SENS_EN,
+
+	NUM_ITEMS
+} ItemType;
+
+extern ItemType current_item;
+//typedef struct {
+//	ItemType* parent;
+//	ItemType* child;
+//} Hierarchy_TypeDef;
 
 typedef struct Item {
-//	const char*				name;
-	MenuType				menu;					// Menu, related to the Item
-	int* 					data_src;                  // Pointer to the related setting
-	const char*				format;
-	void					(*action[NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES])(void);
+	void* 			(*data_get)(void);     // Pointer to the data
+	const char*		format;
+	struct Item*	child;					// Subitem to go into
 } Item_TypeDef;
 
+typedef struct Menu {
+	struct Menu* 	parent;
+	Item_TypeDef*	items;
+	Item_TypeDef*	cur_item;
+	uint8_t 		num_items;
+} Menu_TypeDef;
+
+
+
 typedef struct {
-	Item_TypeDef*			items;
-	ItemType*   			current_item;				// Currently selected item
-	ItemType*				next_item;			// Shows if current item selected to change it's value
-	SelectionType			selection;
+	StateType				state;
+	Menu_TypeDef*			cur_menu;
 } Menu_HandleTypeDef;
 
-extern void (*logic[NUM_OF_ITEMS][NUM_OF_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES][NUM_OF_SELECTIONS])(void);
+extern void (*logic[NUM_ITEMS][NUM_BTN_COMBINATIONS][NUM_OF_PRESS_TYPES])(void);
 void init_menu_items(Menu_HandleTypeDef* user_menu, Item_TypeDef* user_items, uint16_t number_of_menus, uint16_t number_of_items);
 void init_menu_functions(void);
 
 void item_goto_prev(void);
 void item_goto_next(void);
+
+int GetDayMonth(void);
 
 #endif /* INC_MENU_H_ */

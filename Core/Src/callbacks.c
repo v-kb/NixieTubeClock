@@ -46,13 +46,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim) {
  */
 void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim) {
 	if(htim == &htim2) {
-		switch (htim->Channel) {
-			case HAL_TIM_ACTIVE_CHANNEL_1: clock_data.bitmask.tube[0] = 0; break;// E.g. "if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {...}"
-			case HAL_TIM_ACTIVE_CHANNEL_2: clock_data.bitmask.tube[1] = 0; break;
-			case HAL_TIM_ACTIVE_CHANNEL_3: clock_data.bitmask.tube[2] = 0; break;
-			case HAL_TIM_ACTIVE_CHANNEL_4: clock_data.bitmask.tube[3] = 0; break;
-			default: break;
-		}
+//		switch (htim->Channel) {
+//			case HAL_TIM_ACTIVE_CHANNEL_1: clock_data.bitmask.tube[0] = 0; break;// E.g. "if(htim->Channel == HAL_TIM_ACTIVE_CHANNEL_1) {...}"
+//			case HAL_TIM_ACTIVE_CHANNEL_2: clock_data.bitmask.tube[1] = 0; break;
+//			case HAL_TIM_ACTIVE_CHANNEL_3: clock_data.bitmask.tube[2] = 0; break;
+//			case HAL_TIM_ACTIVE_CHANNEL_4: clock_data.bitmask.tube[3] = 0; break;
+//			default: break;
+//		}
 		if(!flag_upd_tubes)
 			flag_upd_tubes = 1;
 	}

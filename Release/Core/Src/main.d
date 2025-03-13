@@ -30,9 +30,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h \
  ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h \
- ../Core/Inc/IN12.h ../DS3231/ds3231_for_stm32_hal.h ../Core/Inc/menu.h \
- ../Core/Inc/main.h ../Core/Inc/buttons.h ../libSettings/settings.h \
- ../Core/Inc/buttons.h
+ ../Core/Inc/nixie_tubes.h ../DS3231/ds3231_for_stm32_hal.h \
+ ../Core/Inc/menu.h ../Core/Inc/main.h ../Core/Inc/buttons.h \
+ ../libSettings/settings.h ../Core/Inc/buttons.h \
+ ../Core/Inc/temperature_sensor.h ../Core/Inc/opt3001.h
 ../Core/Inc/main.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal.h:
 ../Core/Inc/stm32l0xx_hal_conf.h:
@@ -65,10 +66,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_tim_ex.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart.h:
 ../Drivers/STM32L0xx_HAL_Driver/Inc/stm32l0xx_hal_uart_ex.h:
-../Core/Inc/IN12.h:
+../Core/Inc/nixie_tubes.h:
 ../DS3231/ds3231_for_stm32_hal.h:
 ../Core/Inc/menu.h:
 ../Core/Inc/main.h:
 ../Core/Inc/buttons.h:
 ../libSettings/settings.h:
 ../Core/Inc/buttons.h:
+../Core/Inc/temperature_sensor.h:
+../Core/Inc/opt3001.h:
